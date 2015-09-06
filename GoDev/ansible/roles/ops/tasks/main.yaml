@@ -1,0 +1,13 @@
+---
+- name: Install core tooling for admin and access
+  apt: name={{ item }} state=present
+  with_items:
+    - rxvt-unicode-256color 
+    - vim 
+    - tmux 
+    - multitail 
+    - htop
+    - glances
+    - nmon
+    - git
+    - git-flow

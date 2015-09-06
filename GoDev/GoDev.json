@@ -1,0 +1,67 @@
+{
+    "variables": {
+        "HostOnlyName": "vboxnet0",
+        "ssh_name": "vagrant",
+        "ssh_pass": "vagrant",
+        "hostname": "godev",
+        "playbook_file": "playbook.yml"
+    },
+  "provisioners": [
+    {
+      "type": "shell",
+      "execute_command": "echo '{{user `ssh_pass`}}' | {{.Vars}} sudo -S sh '{{.Path}}'",
+      "override": {
+        "virtualbox-ovf": {
+          "scripts": [
+            "scripts/ansible.sh"
+            ]
+        }
+    }
+    },
+    {
+      "type": "ansible-local",
+      "playbook_file": "{{user `playbook_file`}}",
+      "role_paths": [
+        "ansible/roles/base",
+        "ansible/roles/zsh",
+        "ansible/roles/sources",
+        "ansible/roles/ops",
+        "ansible/roles/dev",
+        "ansible/roles/docker",
+        "ansible/roles/user"
+      ]
+    },
+    {
+      "type": "shell",
+      "inline": ["df -h"]
+    },
+    {
+    "type": "shell",
+      "execute_command": "echo '{{user `ssh_pass`}}' | {{.Vars}} sudo -S sh '{{.Path}}'",
+      "override": {
+        "virtualbox-ovf": {
+          "scripts": [
+            "scripts/zerodisk.sh"
+          ]
+        }
+      }
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "vagrant",
+      "compression_level": "9",
+          "output": "build/GoDev.box"
+    }
+  ],
+
+    "builders": [{
+        "type": "virtualbox-ovf",
+        "source_path": "input/virtualbox/box.ovf",
+        "ssh_username": "{{user `ssh_name`}}",
+        "ssh_password": "{{user `ssh_pass`}}",
+
+        "shutdown_command": "echo '{{user `ssh_pass`}}' | sudo -S shutdown -P now"
+
+    }]
+}

@@ -1,0 +1,56 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+# From https://github.com/black-project/black-packer/blob/master/vm.json
+
+VAGRANTFILE_API_VERSION = "2"
+Vagrant.require_version ">= 1.6.5"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  # Box
+  config.vm.box = "GoDev"
+  config.vm.hostname = 'GoDev'
+
+  # Network
+  # config.vm.network "private_network", type: "dhcp"
+  # config.vm.network "private_network", type: "dhcp"
+
+  if Vagrant.has_plugin?('landrush')
+    config.landrush.enabled            = true
+    config.landrush.tld                = config.vm.hostname
+    config.landrush.guest_redirect_dns = false
+  elsif Vagrant.has_plugin?('vagrant-hostmanager')
+    config.hostmanager.enabled     = true
+    config.hostmanager.manage_host = true
+    config.hostmanager.ip_resolver = proc do |vm, resolving_vm|
+      if vm.id
+        `VBoxManage guestproperty get #{vm.id} "/VirtualBox/GuestInfo/Net/1/V4/IP"`.split()[1]
+      end
+    end
+
+    config.hostmanager.aliases = %w(
+      config.vm.hostname
+    )
+
+  end
+
+  # SSH
+  config.ssh.forward_agent = true
+
+  # Providers
+  config.vm.provider "virtualbox" do |v, override|
+    override.vm.box_url = "build/GoDev.box"
+    v.memory = "2048"
+    v.cpus = "2"
+    v.name = "GoDev"
+  end
+
+  # Git
+  if File.exists?(File.join(Dir.home, '.gitconfig')) then
+    config.vm.provision :file do |file|
+      file.source      = '~/.gitconfig'
+      file.destination = '/home/vagrant/.gitconfig'
+    end
+  end
+
+end

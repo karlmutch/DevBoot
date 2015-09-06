@@ -1,0 +1,26 @@
+---
+- name: Install dev tooling
+  apt: name={{ item }} state=present
+  with_items:
+    - libboost-dev 
+    - autoconf 
+    - automake 
+    - libtool
+    - libssl-dev
+    - pkg-config
+    - bison 
+    - g++
+    - flex 
+    - default-jdk 
+    - ant 
+    - mercurial
+    - libssl-dev
+    - libcurl4-gnutls-dev
+    - libexpat1-dev
+    - exuberant-ctags
+    - x11-xserver-utils
+    - gettext
+    - unzip
+    - python-pygments
+    - graphviz
+    - xsel

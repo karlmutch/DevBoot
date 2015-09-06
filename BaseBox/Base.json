@@ -1,0 +1,104 @@
+{
+    "variables": {
+        "HostOnlyName": "vboxnet0",
+        "disk_size": "8192",
+        "ssh_name": "vagrant",
+        "ssh_pass": "vagrant",
+        "hostname": "basebox"
+    },
+  "provisioners": [
+    {
+      "type": "shell",
+      "execute_command": "echo 'vagrant' | {{.Vars}} sudo -S sh '{{.Path}}'",
+      "override": {
+        "virtualbox-iso": {
+          "scripts": [
+            "scripts/base.sh",
+            "scripts/vagrant.sh",
+            "scripts/virtualbox.sh",
+            "scripts/ansible.sh",
+            "scripts/cleanup.sh",
+            "scripts/zerodisk.sh"
+          ]
+        }
+      }
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "vagrant",
+      "compression_level": "9",
+      "override": {
+        "virtualbox": {
+          "output": "build/BaseBox.box"
+        }
+      }
+    }
+  ],
+
+    "builders": [{
+        "type": "virtualbox-iso",
+        "guest_os_type": "Ubuntu_64",
+
+        "vboxmanage": [
+            [ "modifyvm", "{{.Name}}", "--nic1", "nat" ],
+            [ "modifyvm", "{{.Name}}", "--macaddress1", "auto" ],
+            [ "modifyvm", "{{.Name}}", "--nictype1", "virtio" ],
+            [ "modifyvm", "{{.Name}}", "--nic2", "hostonly" ],
+            [ "modifyvm", "{{.Name}}", "--macaddress2", "auto" ],
+            [ "modifyvm", "{{.Name}}", "--nictype2", "virtio" ],
+            [ "modifyvm", "{{.Name}}", "--hostonlyadapter2", "{{user `HostOnlyName`}}" ],
+            [ "modifyvm", "{{.Name}}", "--memory", "2048" ],
+            [ "modifyvm", "{{.Name}}", "--cpus", "2" ],
+            [ "modifyvm", "{{.Name}}", "--vram", "32" ],
+            [ "createhd", "--format", "VMDK", "--filename", "build/home.vmdk", "--size", "3072", "--variant", "Fixed,Split2G" ],
+            [ "storageattach", "{{.Name}}", "--storagectl", "SATA Controller", "--port", "1", "--type", "hdd", "--medium", "build/home.vmdk" ]
+        ],
+
+        "headless": true,
+        "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
+        "guest_os_type": "Ubuntu_64",
+
+        "disk_size" : "{{ user `disk_size`}}",
+	"hard_drive_interface": "sata",
+
+        "iso_url": "http://releases.ubuntu.com/14.04/ubuntu-14.04.3-server-amd64.iso",
+        "iso_checksum": "9e5fecc94b3925bededed0fdca1bd417",
+        "iso_checksum_type": "md5",
+
+        "http_directory" : ".",
+        "http_port_min" : 9001,
+        "http_port_max" : 9001,
+
+        "ssh_username": "{{user `ssh_name`}}",
+        "ssh_password": "{{user `ssh_pass`}}",
+        "ssh_wait_timeout": "20m",
+
+        "shutdown_command": "echo {{user `ssh_pass`}} | sudo -S shutdown -P now",
+
+        "boot_command" : [
+        "<esc><esc><enter><wait>",
+        "/install/vmlinuz ",
+        " fb=false ",
+        " preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg ",
+        " hostname={{user `hostname` }} ",
+        " netcfg/choose_interface=eth0 ",
+        " auto ",
+
+        " console-setup/ask_detect=false ",
+        " console-setup/layoutcode=us ",
+        " console-setup/modelcode=SKIP ",
+        " debian-installer=en_US ",
+        " kbd-chooser/method=us <wait>",
+
+        " keyboard-configuration/modelcode=SKIP ",
+        " keyboard-configuration/layout=USA ",
+        " keyboard-configuration/variant=USA ",
+
+        " locale=en_US.UTF-8 ",
+        " noapic ",
+        " initrd=/install/initrd.gz ",
+        " -- <enter>"
+        ]
+    }]
+}

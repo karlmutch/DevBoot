@@ -1,0 +1,9 @@
+---    
+- name: Install docker at version 1.7.1
+  apt: name={{ item }} state=present
+  with_items:
+    - lxc-docker-1.7.1=1.7.1
+
+- name: Lock docker down to version 1.7.1
+  shell: apt-mark hold lxc-docker
+

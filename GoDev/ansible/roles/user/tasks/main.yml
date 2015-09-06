@@ -1,0 +1,9 @@
+- name: Add local developer group
+  group: gid=1000 name={{user}} state=present
+
+- name: Add local developer user account
+  user: uid=1000 name={{user}} password={{password}} group={{user}} groups=sudo,docker,adm append=yes shell=/bin/zsh state=present
+
+- name: Add local developer ssh keys
+  user: name={{user}} ssh_key_file=.ssh/id_rsa ssh_key_bits=4096 generate_ssh_key=yes
+
