@@ -1,7 +1,9 @@
 # Zero out free space
 dd if=/dev/zero of=/EMPTY bs=1M || echo "dd exit code $? is suppressed";
-rm -f /EMPTY
+dd if=/dev/zero of=/home/EMPTY bs=1M || echo "dd exit code $? is suppressed";
 
+rm -f /EMPTY
+rm -f /home/EMPTY
 
 swapuuid="`/sbin/blkid -o value -l -s UUID -t TYPE=swap`";
 
@@ -15,4 +17,4 @@ if [ "x${swapuuid}" != "x" ]; then
 fi
 
 # Block until the EMPTY file is gone
-sync
+sync;

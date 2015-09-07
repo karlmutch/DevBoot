@@ -29,3 +29,5 @@
   apt: pkg=sudo state=present
   when: ansible_distribution == 'Debian'
 
+- name: Upgrade apt
+  apt: upgrade=full

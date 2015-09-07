@@ -2,9 +2,15 @@
 - name: Install core tooling for admin and access
   apt: name={{ item }} state=present
   with_items:
+    - xauth
+    - rsync
+    - unzip
+    - mosh
+    - wget
+    - curl
     - rxvt-unicode-256color 
     - vim 
-    - tmux 
+    - tmux
     - multitail 
     - htop
     - glances

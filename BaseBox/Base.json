@@ -1,7 +1,7 @@
 {
     "variables": {
         "HostOnlyName": "vboxnet0",
-        "disk_size": "8192",
+        "disk_size": "6000",
         "ssh_name": "vagrant",
         "ssh_pass": "vagrant",
         "hostname": "basebox"
@@ -50,7 +50,7 @@
             [ "modifyvm", "{{.Name}}", "--hostonlyadapter2", "{{user `HostOnlyName`}}" ],
             [ "modifyvm", "{{.Name}}", "--memory", "2048" ],
             [ "modifyvm", "{{.Name}}", "--cpus", "2" ],
-            [ "modifyvm", "{{.Name}}", "--vram", "32" ],
+            [ "modifyvm", "{{.Name}}", "--vram", "64" ],
             [ "createhd", "--format", "VMDK", "--filename", "build/home.vmdk", "--size", "3072", "--variant", "Fixed,Split2G" ],
             [ "storageattach", "{{.Name}}", "--storagectl", "SATA Controller", "--port", "1", "--type", "hdd", "--medium", "build/home.vmdk" ]
         ],
@@ -60,7 +60,7 @@
         "guest_os_type": "Ubuntu_64",
 
         "disk_size" : "{{ user `disk_size`}}",
-	"hard_drive_interface": "sata",
+        "hard_drive_interface": "sata",
 
         "iso_url": "http://releases.ubuntu.com/14.04/ubuntu-14.04.3-server-amd64.iso",
         "iso_checksum": "9e5fecc94b3925bededed0fdca1bd417",

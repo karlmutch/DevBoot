@@ -1,6 +1,6 @@
 ---
 - name: Install dev tooling
-  apt: name={{ item }} state=present
+  apt: name={{ item }} update_cache=yes state=present
   with_items:
     - libboost-dev 
     - autoconf 

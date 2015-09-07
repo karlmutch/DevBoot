@@ -7,3 +7,5 @@
 - name: Add local developer ssh keys
   user: name={{user}} ssh_key_file=.ssh/id_rsa ssh_key_bits=4096 generate_ssh_key=yes
 
+- name: Upgrade tmux
+  apt: name=tmux state=present
