@@ -2,6 +2,7 @@
     "variables": {
         "HostOnlyName": "vboxnet0",
         "disk_size": "6000",
+        "home_disk_size": "3072",
         "ssh_name": "vagrant",
         "ssh_pass": "vagrant",
         "hostname": "basebox"
@@ -51,7 +52,8 @@
             [ "modifyvm", "{{.Name}}", "--memory", "2048" ],
             [ "modifyvm", "{{.Name}}", "--cpus", "2" ],
             [ "modifyvm", "{{.Name}}", "--vram", "64" ],
-            [ "createhd", "--format", "VMDK", "--filename", "build/home.vmdk", "--size", "3072", "--variant", "Fixed,Split2G" ],
+            [ "createhd", "--format", "VMDK", "--filename", "build/home.vmdk", "--size", "{{user `home_disk_size`}}", "--variant", "Fixed,Split2G" ],
+            [ "modifyhd", "build/home.vmdk", "--type", "shareable" ],
             [ "storageattach", "{{.Name}}", "--storagectl", "SATA Controller", "--port", "1", "--type", "hdd", "--medium", "build/home.vmdk" ]
         ],
 

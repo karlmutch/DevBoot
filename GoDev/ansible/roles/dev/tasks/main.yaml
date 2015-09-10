@@ -1,4 +1,10 @@
 ---
+- name: Download Go 1.5.1
+  get_url: url=https://storage.googleapis.com/golang/go1.5.1.linux-amd64.tar.gz dest=/tmp/go1.5.1.linux-amd64.tar.gz
+
+- name: Install Go 1.5.1 locally for user {{user}}
+  unarchive: src=/tmp/go1.5.1.linux-amd64.tar.gz dest="/home/{{user}}" copy=no creates="/home/{{user}}/go/bin/go"
+
 - name: Install dev tooling
   apt: name={{ item }} update_cache=yes state=present
   with_items:

@@ -12,6 +12,6 @@
     - base
     - zsh
     - ops
-    - dev
     - docker
     - user
+    - dev
