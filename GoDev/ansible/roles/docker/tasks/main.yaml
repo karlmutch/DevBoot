@@ -1,9 +1,33 @@
 ---    
-- name: Install docker at version 1.7.1
+- name: Install general certs
   apt: name={{ item }} state=present
   with_items:
-    - lxc-docker-1.7.1=1.7.1
+    - ca-certificates
 
-- name: Lock docker down to version 1.7.1
-  shell: apt-mark hold lxc-docker
+- name: Create a ca-certs directory
+  sudo: true
+  file: path=/usr/local/share/ca-certificates/cacert.org state=directory
 
+- name: Download CA Certs root certificate
+  sudo: true
+  get_url: url=http://www.cacert.org/certs/root.crt dest=/usr/local/share/ca-certificates/cacert.org/root.crt
+
+- name: Download CA Certs class 3 certificate
+  sudo: true
+  get_url: url=http://www.cacert.org/certs/class3.crt dest=/usr/local/share/ca-certificates/cacert.org/class3.crt
+
+- name: Update certificates
+  sudo: true
+  shell: /usr/sbin/update-ca-certificates -f
+
+- name: Add docker apt keys
+  shell: wget -qO- http://get.docker.com/gpg | sudo apt-key add -
+
+- name: Download docker at version 1.8.2
+  command: wget -O /tmp/docker-1.8.2.tgz http://get.docker.com/builds/Linux/x86_64/docker-1.8.2.tgz 
+
+- name: Extract docker archive at version 1.8.2
+  unarchive: src=/tmp/docker-1.8.2.tgz dest=/ copy=no creates=/usr/local/bin/docker
+
+- name: Add the docker group
+  group: name=docker gid=998 state=present

@@ -4,6 +4,7 @@
   with_items:
     - xauth
     - rsync
+    - most
     - unzip
     - mosh
     - wget

@@ -20,6 +20,11 @@
     - default-jdk 
     - ant 
     - mercurial
+    - libpcre3-dev
+    - libgpm-dev
+    - libsqlite3-dev
+    - libreadline6
+    - libreadline6-dev
     - libssl-dev
     - libcurl4-gnutls-dev
     - libexpat1-dev
