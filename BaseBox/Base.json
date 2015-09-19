@@ -1,7 +1,7 @@
 {
     "variables": {
         "HostOnlyName": "vboxnet0",
-        "disk_size": "6000",
+        "disk_size": "4096",
         "home_disk_size": "3072",
         "ssh_name": "vagrant",
         "ssh_pass": "vagrant",

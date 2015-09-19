@@ -8,8 +8,8 @@ Vagrant.require_version ">= 1.6.5"
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Box
-  config.vm.box = "GoDev"
-  config.vm.hostname = 'GoDev'
+  config.vm.box = "Dev"
+  config.vm.hostname = 'Dev'
 
   # Network
   # config.vm.network "private_network", type: "dhcp"
@@ -39,10 +39,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Providers
   config.vm.provider "virtualbox" do |v, override|
-    override.vm.box_url = "build/GoDev.box"
+    override.vm.box_url = "build/Dev.box"
     v.memory = "2048"
     v.cpus = "2"
-    v.name = "GoDev"
+    v.name = "Dev"
   end
 
   # Git
