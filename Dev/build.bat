@@ -1,5 +1,4 @@
 mkdir input || true
-mkdir input/virtualbox || true
-rm input/virtualbox/*.* input/virtualbox/Vagrantfile || true
-cp -r $(echo $USERPROFILE)/.vagrant.d/boxes/BaseBox/0/virtualbox/ input/.
+rm input/* || true
+(cd input ; tar xvf ../../BaseBox/build/BaseBox.box ; cd ..)
 packer build Dev.json

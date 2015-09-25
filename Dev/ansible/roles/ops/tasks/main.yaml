@@ -18,3 +18,14 @@
     - nmon
     - git
     - git-flow
+
+
+
+- name: Download lnav at version 0.7.3
+  command: wget -O /tmp/lnav-0.7.3-linux-64bit.zip https://github.com/tstack/lnav/releases/download/v0.7.3/lnav-0.7.3-linux-64bit.zip 
+
+- name: Extract lnav archive at version 0.7.3
+  unarchive: src=/tmp/lnav-0.7.3-linux-64bit.zip dest=/tmp copy=no creates=/tmp/lnav-0.7.3/lnav
+
+- name: Copy extracted lnav 0.7.3 executable to /usr/local/bin
+  copy: src=/tmp/lnav-0.7.3/lnav dest=/usr/local/bin/lnav
