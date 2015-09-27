@@ -1,9 +1,8 @@
 {
     "variables": {
-        "HostOnlyName": "vboxnet0",
         "ssh_name": "vagrant",
         "ssh_pass": "vagrant",
-        "hostname": "godev",
+        "hostname": "Dev",
         "playbook_file": "playbook.yml"
     },
   "provisioners": [

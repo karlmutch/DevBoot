@@ -1,0 +1,4 @@
+[submodule "Dev/ansible/roles/postgres"]
+	path = Dev/ansible/roles/postgres
+	url = https://github.com/ANXS/postgresql
+	branch = master
