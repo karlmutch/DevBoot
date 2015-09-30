@@ -3,6 +3,8 @@
         "ssh_name": "vagrant",
         "ssh_pass": "vagrant",
         "hostname": "Dev",
+        "vm_name": "Dev",
+        "build_name": "Dev",
         "playbook_file": "playbook.yml"
     },
   "provisioners": [
@@ -57,8 +59,13 @@
     "builders": [{
         "type": "virtualbox-ovf",
         "source_path": "input/box.ovf",
+        "vm_name": "{{user `vm_name`}}",
         "ssh_username": "{{user `ssh_name`}}",
         "ssh_password": "{{user `ssh_pass`}}",
+
+        "vboxmanage_post": [
+            [ "modifyvm", "{{.Name}}", "--name", "Dev" ]
+        ],
 
         "shutdown_command": "echo '{{user `ssh_pass`}}' | sudo -S shutdown -P now"
 

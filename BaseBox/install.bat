@@ -2,6 +2,7 @@ vagrant plugin install landrush
 vagrant plugin install vagrant-hostmanager
 vagrant plugin install vagrant-hostsupdater
 vagrant plugin install vagrant-vbguest
+vagrant plugin install vagrant-cachier
 
 VBoxManage hostonlyif create
 VBoxManage hostonlyif ipconfig "VirtualBox Host-Only Ethernet Adapter #2" --ip 192.168.58.250
