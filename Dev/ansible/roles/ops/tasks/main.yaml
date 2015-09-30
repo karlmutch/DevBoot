@@ -29,3 +29,6 @@
 
 - name: Copy extracted lnav 0.7.3 executable to /usr/local/bin
   copy: src=/tmp/lnav-0.7.3/lnav dest=/usr/local/bin/lnav
+
+- name: SysDig install
+  shell: curl -s https://s3.amazonaws.com/download.draios.com/stable/install-sysdig | sudo bash 
