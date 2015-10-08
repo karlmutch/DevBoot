@@ -8,6 +8,7 @@
 - name: Install dev tooling
   apt: name={{ item }} update_cache=yes state=present
   with_items:
+    - git-extras
     - libboost-dev 
     - autoconf 
     - automake 
