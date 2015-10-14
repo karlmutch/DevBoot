@@ -33,3 +33,17 @@
 
 - name: SysDig install
   shell: curl -s https://s3.amazonaws.com/download.draios.com/stable/install-sysdig | sudo bash 
+
+- name: Download Rust based exa 0.3.0
+  command: wget -O /tmp/exa.zip https://github.com/ogham/exa/releases/download/v0.3.0/exa-linux-x86_64.zip
+
+- name: Extract exa version 0.3.0
+  unarchive: src=/tmp/exa.zip dest=/tmp copy=no creates=/tmp/exa-linux-x86_64
+
+- name: Copy extracted exa 0.3.0 executable to /usr/local/bin
+  copy: src=/tmp/exa-linux-x86_64 dest=/usr/local/bin/exa
+
+
+- name: Make Rust based exa 0.3.0 executable
+  command: chmod +x /usr/local/bin/exa
+
