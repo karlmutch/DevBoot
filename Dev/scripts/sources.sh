@@ -4,6 +4,7 @@ sudo add-apt-repository -y ppa:git-core/ppa
 
 echo "TMUX repository"
 sudo add-apt-repository -y ppa:pi-rho/dev
+sudo add-apt-repository -y ppa:djcj/screenfetch
 sudo apt-get update -y
 sudo apt-get install -y tmux
 
