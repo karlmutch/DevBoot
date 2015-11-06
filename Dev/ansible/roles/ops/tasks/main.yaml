@@ -20,6 +20,9 @@
     - git-flow
     - dfc
     - screenfetch
+    - libnotify4
+    - gvfs-bin
+    - xdg-utils
 
 
 
@@ -44,7 +47,26 @@
 - name: Copy extracted exa 0.3.0 executable to /usr/local/bin
   copy: src=/tmp/exa-linux-x86_64 dest=/usr/local/bin/exa
 
-
 - name: Make Rust based exa 0.3.0 executable
   command: chmod +x /usr/local/bin/exa
+
+
+
+
+- name: Check if atom is installed
+  command: dpkg-query -W atom
+  register: atom_check_deb
+  failed_when: atom_check_deb.rc > 1
+  changed_when: atom_check_deb.rc == 1
+
+- name: Download Atom
+  get_url: 
+    url="https://github.com/atom/atom/releases/download/v1.1.0/atom-amd64.deb"
+    dest="/tmp/atom-amd64.deb"
+  when: atom_check_deb.rc == 1
+
+- name: Install Atom
+  apt: deb="/tmp/atom-amd64.deb"
+  sudo: true
+  when: atom_check_deb.rc == 1
 

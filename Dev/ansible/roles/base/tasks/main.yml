@@ -29,5 +29,15 @@
   apt: pkg=sudo state=present
   when: ansible_distribution == 'Debian'
 
+- name: Update package manager
+  apt: update_cache=yes
+  sudo: true
+
+- name: Install NTP server
+  apt: name={{ item }} state=present
+  with_items:
+    - ntp
+
 - name: Upgrade apt
   apt: upgrade=full
+  sudo: true
