@@ -51,7 +51,14 @@
   command: chmod +x /usr/local/bin/exa
 
 
+- name: Download sift 0.4.1
+  command: wget -O /tmp/sift.tar.gz  https://sift-tool.org/downloads/sift/sift_0.4.1_linux_amd64.tar.gz
 
+- name: Extract sift version 0.4.1
+  unarchive: src=/tmp/sift.tar.gz dest=/tmp copy=no creates=/tmp/sift_0.4.1_linux_amd64/sift
+
+- name: Copy extracted exa 0.3.0 executable to /usr/local/bin
+  copy: src=/tmp/sift_0.4.1_linux_amd64/sift dest=/usr/local/bin/sift
 
 - name: Check if atom is installed
   command: dpkg-query -W atom
