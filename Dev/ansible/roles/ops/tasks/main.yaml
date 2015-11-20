@@ -10,7 +10,8 @@
     - wget
     - curl
     - rxvt-unicode-256color 
-    - vim 
+    - vim
+    - sublime-text-installer
     - tmux
     - multitail 
     - htop
@@ -38,18 +39,17 @@
 - name: SysDig install
   shell: curl -s https://s3.amazonaws.com/download.draios.com/stable/install-sysdig | sudo bash 
 
-- name: Download Rust based exa 0.3.0
-  command: wget -O /tmp/exa.zip https://github.com/ogham/exa/releases/download/v0.3.0/exa-linux-x86_64.zip
+- name: Download Rust based exa 0.4.0
+  command: wget -O /tmp/exa.zip https://github.com/ogham/exa/releases/download/v0.4.0/exa-linux-x86_64.zip
 
-- name: Extract exa version 0.3.0
+- name: Extract exa version 0.4.0
   unarchive: src=/tmp/exa.zip dest=/tmp copy=no creates=/tmp/exa-linux-x86_64
 
-- name: Copy extracted exa 0.3.0 executable to /usr/local/bin
+- name: Copy extracted exa executable to /usr/local/bin
   copy: src=/tmp/exa-linux-x86_64 dest=/usr/local/bin/exa
 
-- name: Make Rust based exa 0.3.0 executable
+- name: Make Rust based exa executable
   command: chmod +x /usr/local/bin/exa
-
 
 - name: Download sift 0.4.1
   command: wget -O /tmp/sift.tar.gz  https://sift-tool.org/downloads/sift/sift_0.4.1_linux_amd64.tar.gz
@@ -57,7 +57,7 @@
 - name: Extract sift version 0.4.1
   unarchive: src=/tmp/sift.tar.gz dest=/tmp copy=no creates=/tmp/sift_0.4.1_linux_amd64/sift
 
-- name: Copy extracted exa 0.3.0 executable to /usr/local/bin
+- name: Copy extracted sift executable to /usr/local/bin
   copy: src=/tmp/sift_0.4.1_linux_amd64/sift dest=/usr/local/bin/sift
 
 - name: Check if atom is installed
@@ -68,7 +68,7 @@
 
 - name: Download Atom
   get_url: 
-    url="https://github.com/atom/atom/releases/download/v1.1.0/atom-amd64.deb"
+    url="https://github.com/atom/atom/releases/download/v1.2.0/atom-amd64.deb"
     dest="/tmp/atom-amd64.deb"
   when: atom_check_deb.rc == 1
 

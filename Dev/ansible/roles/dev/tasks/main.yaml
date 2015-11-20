@@ -17,6 +17,7 @@
     - pkg-config
     - bison 
     - g++
+    - clang-format-3.6
     - flex 
     - default-jdk 
     - ant 
