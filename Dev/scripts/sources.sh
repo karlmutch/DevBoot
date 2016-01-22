@@ -8,6 +8,7 @@ sudo add-apt-repository -y ppa:djcj/screenfetch
 sudo add-apt-repository -y ppa:neovim-ppa/unstable
 sudo add-apt-repository ppa:webupd8team/sublime-text-2
 sudo add-apt-repository ppa:webupd8team/sublime-text-3
+sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
 
 sudo apt-get update -y
 sudo apt-get install -y tmux
