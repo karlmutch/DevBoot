@@ -14,6 +14,9 @@ sudo add-apt-repository -y ppa:webupd8team/sublime-text-3
 
 # Terminator repository
 sudo add-apt-repository -y ppa:gnome-terminator
+
+
+# RUMP tools libxen-dev and qemu-kvm
 sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
 
 sudo apt-get update -y
