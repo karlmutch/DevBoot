@@ -2,6 +2,9 @@
 
 sudo add-apt-repository -y ppa:git-core/ppa
 
+echo "NodeJS Maintainer Repo"
+curl -sL https://deb.nodesource.com/setup | sudo bash -
+
 echo "TMUX repository"
 sudo add-apt-repository -y ppa:pi-rho/dev
 sudo add-apt-repository -y ppa:djcj/screenfetch

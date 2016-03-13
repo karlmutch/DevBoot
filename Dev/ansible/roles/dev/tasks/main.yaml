@@ -38,9 +38,19 @@
     - graphviz
     - pandoc
     - xsel
+    - nodejs
+
+- name: Create symlink for nodejs so that older node software can use it
+  file: src=/usr/bin/nodejs dest=/usr/bin/node state=link
 
 - name: Install rump and unikernel dev tooling
   apt: name={{ item }} update_cache=yes state=present
   with_items:
       qemu-kvm
       libxen-dev
+
+- name: Install ungit
+  npm: name=ungit global=yes
+
+- name: Upgrade to the latest npm
+  npm: name=npm npm@latest global=yes
