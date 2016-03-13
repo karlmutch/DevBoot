@@ -38,3 +38,9 @@
     - graphviz
     - pandoc
     - xsel
+
+- name: Install rump and unikernel dev tooling
+  apt: name={{ item }} update_cache=yes state=present
+  with_items:
+      qemu-kvm
+      libxen-dev
