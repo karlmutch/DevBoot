@@ -9,7 +9,8 @@
     - mosh
     - wget
     - curl
-    - rxvt-unicode-256color 
+    - rxvt-unicode-256color
+    - terminator
     - vim
     - python-dev
     - python-pip

@@ -6,8 +6,11 @@ echo "TMUX repository"
 sudo add-apt-repository -y ppa:pi-rho/dev
 sudo add-apt-repository -y ppa:djcj/screenfetch
 sudo add-apt-repository -y ppa:neovim-ppa/unstable
-sudo add-apt-repository ppa:webupd8team/sublime-text-2
-sudo add-apt-repository ppa:webupd8team/sublime-text-3
+sudo add-apt-repository -y ppa:webupd8team/sublime-text-2
+sudo add-apt-repository -y ppa:webupd8team/sublime-text-3
+
+# Terminator repository
+sudo add-apt-repository -y ppa:gnome-terminator
 
 sudo apt-get update -y
 sudo apt-get install -y tmux
