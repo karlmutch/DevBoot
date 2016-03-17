@@ -10,6 +10,13 @@ This project requires serveral Vagrant plugins installed which will be done when
 
 The project was begun labour day weekend 2015
 
+Dependencies
+------------
+
+The Vagrant files used within this provisioning setup require the use of some vagrant plugs namely:
+
+vagrant plugin install vagrant-hosts
+
 Usage
 -----
 

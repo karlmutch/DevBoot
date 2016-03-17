@@ -1,5 +1,12 @@
+netstat -rn > /etc/saved_hosts
+echo "Test" >> /etc/saved_hosts
+
+echo "`netstat -rn | grep \"^0.0.0.0 \" | cut -d \" \" -f10` hostserver" >> /etc/hosts
+
+#echo 'Acquire::http::Proxy "http://hostserver:3142";' >> /etc/apt/apt.conf.d/01proxy
+
 apt-get update
-apt-get -y upgrade
+apt-get -y dist-upgrade
 
 apt-get -y install linux-headers-$(uname -r)
 
@@ -14,3 +21,4 @@ echo "GSSAPIAuthentication no" >> /etc/ssh/sshd_config
 
 # vagrant prefers no tty
 echo "Defaults !requiretty" >> /etc/sudoers
+

@@ -1,8 +1,21 @@
 
+required_plugins = %w( vagrant-hosts vagrant-hostmanager vagrant-vbguest landrush vagrant-cachier)
+
+plugins_to_install = required_plugins.select { |plugin| not Vagrant.has_plugin? plugin }
+  if not plugins_to_install.empty?
+      puts "Installing plugins: #{plugins_to_install.join(' ')}"
+      if system "vagrant plugin install #{plugins_to_install.join(' ')}"
+          exec "vagrant #{ARGV.join(' ')}"
+      else
+          abort "Installation of one or more plugins has failed. Aborting."
+      end
+end
+
 # The contents below were provided by the Packer Vagrant post-processor
 
 Vagrant.configure("2") do |config|
   config.vm.base_mac = "080027FC2547"
+  config.cache.scope = :box
 end
 
 

@@ -5,29 +5,40 @@
     - ca-certificates
 
 - name: Create a ca-certs directory
-  sudo: true
+  become: true
   file: path=/usr/local/share/ca-certificates/cacert.org state=directory
 
 - name: Download CA Certs root certificate
-  sudo: true
+  become: true
   get_url: url=http://www.cacert.org/certs/root.crt dest=/usr/local/share/ca-certificates/cacert.org/root.crt
 
 - name: Download CA Certs class 3 certificate
-  sudo: true
+  become: true
   get_url: url=http://www.cacert.org/certs/class3.crt dest=/usr/local/share/ca-certificates/cacert.org/class3.crt
 
 - name: Update certificates
-  sudo: true
+  become: true
   shell: /usr/sbin/update-ca-certificates -f
 
 - name: Add docker apt keys
-  shell: wget -qO- http://get.docker.com/gpg | sudo apt-key add -
+  apt_key:
+    state: present
+    keyserver: hkp://p80.pool.sks-keyservers.net:80
+    id: 58118E89F3A912897C070ADBF76221572C52609D
 
-- name: Download docker at version 1.8.2
-  command: wget -O /tmp/docker-1.8.2.tgz http://get.docker.com/builds/Linux/x86_64/docker-1.8.2.tgz 
+- name: Add docker repo as a source
+  apt_repository: 
+    repo: "deb https://apt.dockerproject.org/repo ubuntu-trusty main"
+    state: present
+    update_cache: yes
 
-- name: Extract docker archive at version 1.8.2
-  unarchive: src=/tmp/docker-1.8.2.tgz dest=/ copy=no creates=/usr/local/bin/docker
+- name: Install Docker
+  apt: name={{ item }} state=present
+  with_items:
+      docker-engine
 
 - name: Add the docker group
   group: name=docker gid=998 state=present
+
+- name: Start Docker
+  service: name=docker state=restarted

@@ -2,7 +2,7 @@
     "variables": {
         "HostOnlyName": "vboxnet0",
         "disk_size": "6500",
-        "home_disk_size": "3072",
+        "home_disk_size": "8192",
         "ssh_name": "vagrant",
         "ssh_pass": "vagrant",
         "hostname": "basebox"
@@ -60,8 +60,8 @@
         "disk_size" : "{{ user `disk_size`}}",
         "hard_drive_interface": "sata",
 
-        "iso_url": "http://releases.ubuntu.com/14.04/ubuntu-14.04.3-server-amd64.iso",
-        "iso_checksum": "9e5fecc94b3925bededed0fdca1bd417",
+        "iso_url": "http://releases.ubuntu.com/14.04/ubuntu-14.04.4-server-amd64.iso",
+        "iso_checksum": "2ac1f3e0de626e54d05065d6f549fa3a",
         "iso_checksum_type": "md5",
 
         "http_directory" : ".",

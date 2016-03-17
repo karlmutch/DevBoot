@@ -1,6 +1,6 @@
 - name: Provisioning of various runtime components for applications
   hosts: all
-  sudo: yes
+  become: yes
   vars:
     # Password was generated using mkpasswd --salt="23P3pp3r1a..0.0." --method=SHA-512
     password: $6$23P3pp3r1a..0.0.$lJXqtqjOzvSYlsqtqYep1nAkzrrHiBM8DJA4FwKnBhXD9sjVyRqD/EJMZRG5X6QD7guFHg5AqqGcaGAVJJdmj.

@@ -31,22 +31,26 @@
     - gvfs-bin
     - xdg-utils
 
+- name: Download lnav at version 0.8.0
+  get_url:
+    url: "https://github.com/tstack/lnav/releases/download/v0.8.0/lnav-0.8.0-linux-64bit.zip"
+    dest: "/tmp/lnav-0.8.0-linux-64bit.zip"
 
+- name: Extract lnav archive at version 0.8.0
+  unarchive: src=/tmp/lnav-0.8.0-linux-64bit.zip dest=/tmp copy=no creates=/tmp/lnav-0.8.0/lnav
 
-- name: Download lnav at version 0.7.3
-  command: wget -O /tmp/lnav-0.7.3-linux-64bit.zip https://github.com/tstack/lnav/releases/download/v0.7.3/lnav-0.7.3-linux-64bit.zip 
-
-- name: Extract lnav archive at version 0.7.3
-  unarchive: src=/tmp/lnav-0.7.3-linux-64bit.zip dest=/tmp copy=no creates=/tmp/lnav-0.7.3/lnav
-
-- name: Copy extracted lnav 0.7.3 executable to /usr/local/bin
-  copy: src=/tmp/lnav-0.7.3/lnav dest=/usr/local/bin/lnav
+- name: Copy extracted lnav 0.8.0 executable to /usr/local/bin
+  copy: src=/tmp/lnav-0.8.0/lnav dest=/usr/local/bin/lnav
 
 - name: SysDig install
   shell: curl -s https://s3.amazonaws.com/download.draios.com/stable/install-sysdig | sudo bash 
 
 - name: Download Rust based exa 0.4.0
-  command: wget -O /tmp/exa.zip https://github.com/ogham/exa/releases/download/v0.4.0/exa-linux-x86_64.zip
+  uri:
+    method: GET
+    url: "https://github.com/ogham/exa/releases/download/v0.4.0/exa-linux-x86_64.zip"
+    dest: "/tmp/exa.zip"
+    return_content: yes
 
 - name: Extract exa version 0.4.0
   unarchive: src=/tmp/exa.zip dest=/tmp copy=no creates=/tmp/exa-linux-x86_64
@@ -55,16 +59,18 @@
   copy: src=/tmp/exa-linux-x86_64 dest=/usr/local/bin/exa
 
 - name: Make Rust based exa executable
-  command: chmod +x /usr/local/bin/exa
+  file: path=/usr/local/bin/exa mode="u+x,g+x,o+x"
 
-- name: Download sift 0.4.1
-  command: wget -O /tmp/sift.tar.gz  https://sift-tool.org/downloads/sift/sift_0.4.1_linux_amd64.tar.gz
+- name: Download sift 0.8.0
+  get_url: 
+    url: "https://sift-tool.org/downloads/sift/sift_0.8.0_linux_amd64.tar.gz"
+    dest: "/tmp/sift.tar.gz"
 
-- name: Extract sift version 0.4.1
-  unarchive: src=/tmp/sift.tar.gz dest=/tmp copy=no creates=/tmp/sift_0.4.1_linux_amd64/sift
+- name: Extract sift version 0.8.0
+  unarchive: src=/tmp/sift.tar.gz dest=/tmp copy=no creates=/tmp/sift_0.8.0_linux_amd64/sift
 
 - name: Copy extracted sift executable to /usr/local/bin
-  copy: src=/tmp/sift_0.4.1_linux_amd64/sift dest=/usr/local/bin/sift
+  copy: src=/tmp/sift_0.8.0_linux_amd64/sift dest=/usr/local/bin/sift
 
 - name: Check if atom is installed
   command: dpkg-query -W atom
@@ -74,12 +80,12 @@
 
 - name: Download Atom
   get_url: 
-    url="https://github.com/atom/atom/releases/download/v1.2.0/atom-amd64.deb"
+    url="https://github.com/atom/atom/releases/download/v1.5.4/atom-amd64.deb"
     dest="/tmp/atom-amd64.deb"
   when: atom_check_deb.rc == 1
 
 - name: Install Atom
   apt: deb="/tmp/atom-amd64.deb"
-  sudo: true
+  become: true
   when: atom_check_deb.rc == 1
 
