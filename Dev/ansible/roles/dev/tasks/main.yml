@@ -1,9 +1,17 @@
 ---
+
+- name: Add the Ubuntu 14.04 Secruity repo as a source
+  apt_repository: 
+    repo: "deb http://security.ubuntu.com/ubuntu trusty-security main universe"
+    state: present
+    update_cache: yes
+
 - name: Install rump and unikernel dev tooling
-  apt: name={{ item }} update_cache=yes state=present
+  apt: name={{ item }} state=present
   with_items:
-      qemu
-      libxen
+      - qemu
+      - libxen-dev
+      - libxen-4.4
 
 - name: Download Go 1.6
   get_url: url=https://storage.googleapis.com/golang/go1.6.linux-amd64.tar.gz dest=/tmp/go1.6.linux-amd64.tar.gz
