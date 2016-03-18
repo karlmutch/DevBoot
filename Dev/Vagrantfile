@@ -1,3 +1,9 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+# From https://github.com/black-project/black-packer/blob/master/vm.json
+
+VAGRANTFILE_API_VERSION = "2"
+Vagrant.require_version ">= 1.6.5"
 
 required_plugins = %w( vagrant-hosts vagrant-hostmanager vagrant-vbguest landrush vagrant-cachier)
 
@@ -13,11 +19,10 @@ end
 
 # The contents below were provided by the Packer Vagrant post-processor
 
-Vagrant.configure("2") do |config|
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.base_mac = "080027FC2547"
   config.cache.scope = :box
 end
-
 
 # The contents below (if any) are custom contents provided by the
 # Packer template during image build.

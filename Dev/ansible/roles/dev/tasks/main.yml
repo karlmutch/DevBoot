@@ -1,10 +1,10 @@
 ---
 
-- name: Add the Ubuntu 14.04 Secruity repo as a source
-  apt_repository: 
-    repo: "deb http://security.ubuntu.com/ubuntu trusty-security main universe"
-    state: present
-    update_cache: yes
+- name: Add 14.04 Security repo and git toolsets ubuntu repositories
+  apt_repository: repo='{{ item }}' update_cache=yes
+  with_items:
+    - ppa:git-core/ppa
+    - deb http://security.ubuntu.com/ubuntu trusty-security main universe
 
 - name: Install rump and unikernel dev tooling
   apt: name={{ item }} state=present
@@ -52,13 +52,3 @@
     - graphviz
     - pandoc
     - xsel
-    - nodejs
-
-- name: Create symlink for nodejs so that older node software can use it
-  file: src=/usr/bin/nodejs dest=/usr/bin/node state=link
-
-- name: Install ungit
-  npm: name=ungit global=yes
-
-- name: Upgrade to the latest npm
-  npm: name=npm@latest global=yes

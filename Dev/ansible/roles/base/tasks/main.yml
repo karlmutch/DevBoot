@@ -24,6 +24,8 @@
   shell: date > /etc/vagrant_box_build_time
   tags: install
 
+- name: set Ubuntu keyserver
+  apt_key: keyserver=keyserver.ubuntu.com id=36A1D7869245C8950F966E92D8576A8BA88D21E9
 
 - name: Install sudo (Debian only)
   apt: pkg=sudo state=present

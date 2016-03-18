@@ -1,4 +1,15 @@
 ---
+- name: Add development tool sets ubuntu repositories
+  apt_repository: repo='{{ item }}' update_cache=yes
+  with_items:
+    - ppa:git-core/ppa
+    - ppa:gnome-terminator
+    - ppa:pi-rho/dev
+    - ppa:djcj/screenfetch
+    - ppa:neovim-ppa/unstable
+    - ppa:webupd8team/sublime-text-2
+    - ppa:webupd8team/sublime-text-3
+
 - name: Install core tooling for admin and access
   apt: name={{ item }} state=present
   with_items:
