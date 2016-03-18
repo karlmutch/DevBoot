@@ -4,6 +4,7 @@ echo "Test" >> /etc/saved_hosts
 echo "`netstat -rn | grep \"^0.0.0.0 \" | cut -d \" \" -f10` hostserver" >> /etc/hosts
 
 #echo 'Acquire::http::Proxy "http://hostserver:3142";' >> /etc/apt/apt.conf.d/01proxy
+netstart -rn
 
 apt-get update
 apt-get -y dist-upgrade
