@@ -5,7 +5,7 @@
 VAGRANTFILE_API_VERSION = "2"
 Vagrant.require_version ">= 1.6.5"
 
-required_plugins = %w( vagrant-hosts vagrant-hostmanager vagrant-vbguest landrush vagrant-cachier)
+required_plugins = %w( vagrant-hostmanager vagrant-vbguest vagrant-cachier )
 
 plugins_to_install = required_plugins.select { |plugin| not Vagrant.has_plugin? plugin }
   if not plugins_to_install.empty?
@@ -29,10 +29,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # config.vm.network "private_network", type: "dhcp"
   # config.vm.network "private_network", type: "dhcp"
 
-  config.landrush.enabled            = true
-  config.landrush.guest_redirect_dns = true
-  #config.landrush.host = "serverhost", "10.0.2.2"
-
   config.hostmanager.enabled     = true
   config.hostmanager.manage_host = true
   config.hostmanager.manage_guest = true
@@ -42,11 +38,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   if vm.id
     `VBoxManage guestproperty get #{vm.id} "/VirtualBox/GuestInfo/Net/1/V4/IP"`.split()[1]
   end
-
-    config.hostmanager.aliases = %w(
-      config.vm.hostname
-    )
-
+    config.hostmanager.aliases = %w( #{config.vm.hostname} )
   end
 
   # SSH
