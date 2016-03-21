@@ -14,10 +14,9 @@
       "override": {
         "virtualbox-iso": {
           "scripts": [
-            "scripts/base.sh",
             "scripts/vagrant.sh",
+            "scripts/networking.sh",
             "scripts/virtualbox.sh",
-            "scripts/ansible.sh",
             "scripts/cleanup.sh",
             "scripts/zerodisk.sh"
           ]
