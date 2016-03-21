@@ -39,7 +39,7 @@
 
     "builders": [{
         "type": "virtualbox-iso",
-        "guest_os_type": "Ubuntu_64",
+        "guest_os_type": "RedHat_64",
 
         "vboxmanage": [
             [ "modifyvm", "{{.Name}}", "--nic1", "nat" ],
@@ -55,13 +55,12 @@
 
         "headless": true,
         "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
-        "guest_os_type": "Ubuntu_64",
 
         "disk_size" : "{{ user `disk_size`}}",
         "hard_drive_interface": "sata",
 
-        "iso_url": "http://releases.ubuntu.com/14.04/ubuntu-14.04.4-server-amd64.iso",
-        "iso_checksum": "2ac1f3e0de626e54d05065d6f549fa3a",
+        "iso_url": "http://ftp.usf.edu/pub/centos/7/isos/x86_64/CentOS-7-x86_64-Minimal-1511.iso",
+        "iso_checksum": "88c0437f0a14c6e2c94426df9d43cd67",
         "iso_checksum_type": "md5",
 
         "http_directory" : ".",
@@ -70,31 +69,8 @@
         "ssh_password": "{{user `ssh_pass`}}",
         "ssh_wait_timeout": "20m",
 
-        "shutdown_command": "echo {{user `ssh_pass`}} | sudo -S shutdown -P now",
+        "shutdown_command": "echo {{user `ssh_pass`}} | sudo -S /sbin/halt -h -p",
 
-        "boot_command" : [
-        "<esc><esc><enter><wait>",
-        "/install/vmlinuz ",
-        " fb=false ",
-        " preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg ",
-        " hostname={{user `hostname` }} ",
-        " netcfg/choose_interface=eth0 ",
-        " auto ",
-
-        " console-setup/ask_detect=false ",
-        " console-setup/layoutcode=us ",
-        " console-setup/modelcode=SKIP ",
-        " debian-installer=en_US ",
-        " kbd-chooser/method=us <wait>",
-
-        " keyboard-configuration/modelcode=SKIP ",
-        " keyboard-configuration/layout=USA ",
-        " keyboard-configuration/variant=USA ",
-
-        " locale=en_US.UTF-8 ",
-        " noapic ",
-        " initrd=/install/initrd.gz ",
-        " -- <enter>"
-        ]
+        "boot_command" : ["<tab> text ks=http://{{.HTTPIP}}:{{.HTTPPort}}/ks.cfg<enter><wait>"]
     }]
 }
