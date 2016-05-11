@@ -52,3 +52,19 @@
     - graphviz
     - pandoc
     - xsel
+
+- name: Install thrift development tools for C++
+  apt: name={{ item }} update_cache=yes state=present
+  with_items:
+    - automake
+    - bison 
+    - flex
+    - g++ 
+    - git 
+    - libboost1.55-all-dev 
+    - libevent-dev 
+    - libssl-dev 
+    - libtool 
+    - make 
+    - pkg-config
+
