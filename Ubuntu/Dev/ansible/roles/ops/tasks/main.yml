@@ -37,6 +37,7 @@
     - git
     - git-flow
     - dfc
+    - parallel
     - screenfetch
     - libnotify4
     - gvfs-bin
