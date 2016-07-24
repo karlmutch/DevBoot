@@ -1,0 +1,27 @@
+- name: Upgrade tmux
+  apt: name=tmux state=present
+
+- name: Install Zsh and mosh
+  apt: name={{ item }} state=present
+  with_items:
+    - mosh
+    - zsh
+
+- name: Add local developer group
+  group: gid=1000 name={{user}} state=present
+
+- name: Add local developer user account
+  user: uid=1000 name={{user}} group={{user}} groups=sudo,adm,docker append=yes shell=/bin/zsh state=present
+
+- name: Add local developer ssh keys
+  user: name={{user}} ssh_key_file=.ssh/id_rsa ssh_key_bits=4096 generate_ssh_key=yes
+
+- name: Copy Public Key of the installers account into the destination machine
+  copy: src=id_rsa.pub dest=/tmp/id_rsa.pub
+
+- name: Add developer SSH key
+  authorized_key: user={{user}} key="{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+
+- name: Change sudo group to not need passwords
+  lineinfile: dest=/etc/sudoers state=present line='{{user}} ALL=(ALL) NOPASSWD:ALL' validate='visudo -cf %s'
+

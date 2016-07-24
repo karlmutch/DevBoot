@@ -1,0 +1,19 @@
+- name: Change sudo group to not need passwords
+  lineinfile: dest=/etc/sudoers state=present regexp="^Defaults\s+env_reset" line="Defaults\texempt_group=sudo"
+
+- name: Set DNS checking to off
+  lineinfile: line="UseDNS no" dest=/etc/ssh/sshd_config state=present
+
+- name: Set password access to false
+  lineinfile: line="GSSAPIAuthentication no" dest=/etc/ssh/sshd_config state=present
+
+- name: Set password access to false
+  lineinfile: regexp="^PasswordAuthentication " line="PasswordAuthentication no" dest=/etc/ssh/sshd_config state=present
+
+- name: Install packages that assist with security
+  apt: state=installed pkg={{ item }}
+  with_items:
+    - ufw
+    - fail2ban
+    - unattended-upgrades
+    - logwatch

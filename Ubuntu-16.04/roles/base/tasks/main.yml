@@ -1,0 +1,26 @@
+---
+- name: Remove Use DNS
+  lineinfile: "state=absent dest=/etc/ssh/sshd_config
+  line='UseDNS no'"
+  tags: install
+
+- name: set Ubuntu keyserver
+  apt_key: keyserver=keyserver.ubuntu.com id=36A1D7869245C8950F966E92D8576A8BA88D21E9
+
+- name: Install sudo (Debian only)
+  apt: pkg=sudo state=present
+  when: ansible_distribution == 'Debian'
+
+- name: Update package manager
+  apt: update_cache=yes
+  become: true
+
+- name: Install NTP server
+  apt: name={{ item }} state=present
+  with_items:
+    - ntp
+    - aptitude
+
+- name: Upgrade apt
+  apt: upgrade=full
+  become: true

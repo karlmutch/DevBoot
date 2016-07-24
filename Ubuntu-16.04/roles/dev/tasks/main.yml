@@ -1,0 +1,70 @@
+---
+
+- name: Add 16.04 Security repo and git toolsets ubuntu repositories
+  apt_repository: repo='{{ item }}' update_cache=yes
+  with_items:
+    - ppa:git-core/ppa
+    - deb http://security.ubuntu.com/ubuntu xenial-security main universe
+
+- name: Install rump and unikernel dev tooling, was 4.4 now 4.6
+  apt: name={{ item }} state=present
+  with_items:
+      - qemu
+      - libxen-dev
+      - libxen-4.6
+
+- name: Download Go 1.6.3
+  get_url: url=https://storage.googleapis.com/golang/go1.6.3.linux-amd64.tar.gz dest=/tmp/go1.6.3.linux-amd64.tar.gz
+
+- name: Install Go 1.6.3 locally for user {{user}}
+  unarchive: src=/tmp/go1.6.3.linux-amd64.tar.gz dest="/home/{{user}}" copy=no creates="/home/{{user}}/go/bin/go"
+
+- name: Install dev tooling
+  apt: name={{ item }} update_cache=yes state=present
+  with_items:
+    - git-extras
+    - libboost-dev 
+    - autoconf 
+    - automake 
+    - libtool
+    - libssl-dev
+    - pkg-config
+    - bison
+    - g++
+    - clang-format-3.6
+    - flex 
+    - default-jdk 
+    - ant
+    - mercurial
+    - libpcre3-dev
+    - libgpm-dev
+    - libsqlite3-dev
+    - libreadline6
+    - libreadline6-dev
+    - libssl-dev
+    - libcurl4-gnutls-dev
+    - libexpat1-dev
+    - exuberant-ctags
+    - x11-xserver-utils
+    - gettext
+    - unzip
+    - python-pygments
+    - graphviz
+    - pandoc
+    - xsel
+
+- name: Install thrift development tools for C++
+  apt: name={{ item }} update_cache=yes state=present
+  with_items:
+    - automake
+    - bison 
+    - flex
+    - g++ 
+    - git 
+    - libboost1.58-all-dev 
+    - libevent-dev 
+    - libssl-dev 
+    - libtool 
+    - make 
+    - pkg-config
+
