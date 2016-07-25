@@ -1,1 +1,1 @@
-karlmutch.com
+karlmutch.com ansible_connection=ssh        ansible_user=root

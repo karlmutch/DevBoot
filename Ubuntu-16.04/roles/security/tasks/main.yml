@@ -17,3 +17,65 @@
     - fail2ban
     - unattended-upgrades
     - logwatch
+
+- name: Setup automatic periodic apt updates
+  lineinfile: dest=/etc/apt/apt.conf.d/10periodic line="APT::Periodic::Update-Package-Lists \"1\";" state=present
+
+- name: Setup automatic periodic apt package downloads
+  lineinfile: dest=/etc/apt/apt.conf.d/10periodic state=present line="APT::Periodic::Download-Upgradeable-Packages \"1\";"
+
+- name: Setup automatic periodic apt package auto clean
+  lineinfile: dest=/etc/apt/apt.conf.d/10periodic state=present line="APT::Periodic::AutocleanInterval \"7\";"
+
+- name: Setup Firewall to deny all
+  ufw: state=enabled policy=deny
+
+# ufw supports connection rate limiting, which is useful for protecting
+# against brute-force login attacks. ufw will deny connections if an IP
+# address has attempted to initiate 6 or more connections in the last
+# 30 seconds. See  http://www.debian-administration.org/articles/187
+# for details. Typical usage is:
+- name: Allow ssh traffic
+  ufw: rule=limit port=ssh proto=tcp
+
+# Allow OpenSSH. (Note that as ufw manages its own state, simply removing
+# a rule=allow task can leave those ports exposed. Either use delete=yes
+# or a separate state=reset task)
+- name: Allow OpenSSH traffic
+  ufw: rule=allow name=OpenSSH
+
+# Set logging
+- name: Enabled UFW logging
+  ufw: logging=on
+
+# Sometimes it is desirable to let the sender know when traffic is
+# being denied, rather than simply ignoring it. In these cases, use
+# reject instead of deny. In addition, log rejected connections:
+- name: Enabled UFW reject logging
+  ufw: rule=reject port=auth log=yes
+
+- name: Allow mosh traffic
+  ufw: rule=allow proto=udp port=60000:60010
+
+- name: Disallow root SSH access
+  lineinfile: dest=/etc/ssh/sshd_config
+              regexp="^PermitRootLogin"
+              line="PermitRootLogin no"
+              state=present
+  notify: Restart ssh
+
+- name: Set up Postfix to relay mail to enabled logging security reports
+  debconf: name=postfix
+           question='{{ item.question }}'
+           value='{{ item.value }}'
+           vtype='{{ item.vtype }}'
+  with_items:
+      - { question: 'postfix/mailname', value: '{{ ansible_fqdn }}', vtype: 'string' }
+      - { question: 'postfix/main_mailer_type', value: 'Internet Site', vtype: 'string' }
+
+- name: Email log summary daily
+  lineinfile: dest=/etc/cron.daily/00logwatch
+              regexp="^/usr/sbin/logwatch"
+              line="/usr/sbin/logwatch --output mail --mailto karlmutch@gmail.com --detail high"
+              state=present create=yes
+
