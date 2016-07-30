@@ -20,8 +20,28 @@ vagrant plugin install vagrant-hosts
 Usage
 -----
 
-The main deployment process is done by creating a Base Box using the BaseBox/build.bat file.  The output from this step is then copied by the Dev/build.bat file into a local input directory within the Dev project.
+The main deployment process is done by creating a Base Box running the BaseBox/build.bat file.  The output from this step is then copied by the Dev/build.bat file into a local input directory within the Dev project.
 
-Once the main 2 steps have been completed the resulting Dev machine can be initialized by navigating into the Dev/Build directory where the Dev.box file can be found.  The virtual box dev appliance can be added to your Vagrant installation by using the command 'vagrant box add Dev.box --name Dev', a Vagrant file is then needed and can be generated using the 'vagrant init Dev' command.  To run the new machine use the 'vagrant up' command and you will be able to login into the new machine using SSH to complete your setup.
+cd BaseBox
+# Windows
+./build.bat 
+# OSX or Linux
+./build.sh
+
+The second step will read the output from the first step and use it to generate a fully configured Linux Development box file
+
+cd ../Dev
+# Windows
+./build.bat 
+# OSX or Linux
+./build.sh
+
+Once the main 2 steps have been completed the resulting Dev machine can be initialized by navigating into the Dev/Build directory where the Dev.box file can be found.  The virtual box dev appliance can be added to your Vagrant installation by using the command:
+
+vagrant box add Dev.box --name Dev
+
+You might find that the output directory for the vagrant box add is not the default folder for the VirtualBox administration UI.  Look in your login directory for the .vagran.d/boxes/Dev/0/virtualbox directory.  The files in this directory constitute your virtual machine that can be imported by the VirtualBox administration UI.
+
+When the vagrant box add is done you will be able to start the VirtualBox User Interface and see that a new Dev virtual machine is available for you to start. Starting the Dev VM will also start an SSH server inside the VM and you will be able to use SSH to login.  Logins are done using the public key files you already have.
 
 If you wish to add postgres to the installation navigate to the Dev/ansible directory and run the command 'ansible-playbook runtime.yml -i ./Dev.inventory'.
