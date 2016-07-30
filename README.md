@@ -24,21 +24,18 @@ The main deployment process is done by creating a Base Box running the BaseBox/b
 
 cd BaseBox
 
+./install.bat   -- First time only
 ./build.bat 
 
 or
 
+./install.sh    -- First time only
 ./build.sh
 
 The second step will read the output from the first step and use it to generate a fully configured Linux Development box file
 
 cd ../Dev
-
-./build.bat 
-
-or
-
-./build.sh
+./build.sh    -- Windows and OSX
 
 Once the main 2 steps have been completed the resulting Dev machine can be initialized by navigating into the Dev/Build directory where the Dev.box file can be found.  The virtual box dev appliance can be added to your Vagrant installation by using the command:
 
