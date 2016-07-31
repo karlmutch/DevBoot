@@ -5,7 +5,8 @@
         "hostname": "Dev",
         "vm_name": "Dev",
         "build_name": "Dev",
-        "playbook_file": "playbook.yml"
+        "playbook_file": "playbook.yml",
+        "username": "{{env `user`}}"
     },
   "provisioners": [
     {
@@ -29,7 +30,8 @@
         "ansible/roles/dev",
         "ansible/roles/docker",
         "ansible/roles/user"
-      ]
+      ],
+      "extra_arguments": "--extra-vars 'user={{user `username`}}'"
     },
     {
       "type": "shell",

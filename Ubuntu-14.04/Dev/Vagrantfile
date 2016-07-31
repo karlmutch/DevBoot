@@ -5,7 +5,7 @@
 VAGRANTFILE_API_VERSION = "2"
 Vagrant.require_version ">= 1.6.5"
 
-required_plugins = %w( vagrant-hosts vagrant-hostmanager vagrant-vbguest landrush vagrant-cachier)
+required_plugins = %w( vagrant-hosts vagrant-hostmanager vagrant-vbguest vagrant-cachier)
 
 plugins_to_install = required_plugins.select { |plugin| not Vagrant.has_plugin? plugin }
   if not plugins_to_install.empty?
