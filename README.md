@@ -43,6 +43,11 @@ vagrant box add Dev.box --name Dev
 
 You might find that the output directory for the vagrant box add is not the default folder for the VirtualBox administration UI.  Look in your login directory for the .vagran.d/boxes/Dev/0/virtualbox directory.  The files in this directory constitute your virtual machine that can be imported by the VirtualBox administration UI.
 
-When the vagrant box add is done you will be able to start the VirtualBox User Interface and see that a new Dev virtual machine is available for you to start. Starting the Dev VM will also start an SSH server inside the VM and you will be able to use SSH to login.  Logins are done using the public key files you already have.
+Having imported the virtual machine into VirtualBox you will need to attach the network interface to the VM that will be used for connecting from your localhost to your development environment.  use the Host only interface that is created by using the install.sh file in the BaseBox directory.  You can also reuse an existing interface that is a HostOnly interface allowing SSH access from your workstation to the Linux VM.
+
+To use the attached network interface start your virtual machine and use the console to login to it using the console as the vagrant user with a password of vagrant.  Then use sudo vi /etc/network/interfaces to add the new eth1 interface using the same entries as the eth0 interface, that is using DHCP.  You can also add your own explict IP address using instructions found at, https://help.ubuntu.com/community/NetworkConfigurationCommandLine/Automatic#Finding_your_network_interface.
+
+Then logout and restart the VM and use SSH to login. SSH will use the user name of your local machines account to login to linux machine and will use your public key to access the development VM.
+
 
 If you wish to add postgres to the installation navigate to the Dev/ansible directory and run the command 'ansible-playbook runtime.yml -i ./Dev.inventory'.
