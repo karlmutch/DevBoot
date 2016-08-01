@@ -39,9 +39,9 @@ cd ../Dev
 
 Once the main 2 steps have been completed the resulting Dev machine can be initialized by navigating into the Dev/Build directory where the Dev.box file can be found.  The virtual box dev appliance can be added to your Vagrant installation by using the command:
 
-vagrant box add Dev.box --name Dev
+vagrant box add build/Dev.box --name Dev
 
-You might find that the output directory for the vagrant box add is not the default folder for the VirtualBox administration UI.  Look in your login directory for the .vagran.d/boxes/Dev/0/virtualbox directory.  The files in this directory constitute your virtual machine that can be imported by the VirtualBox administration UI.
+You might find that the output directory for the vagrant box add is not the default folder for the VirtualBox administration UI.  Look in your login directory for the .vagrant.d/boxes/Dev/0/virtualbox directory.  The files in this directory constitute your virtual machine that can be imported by the VirtualBox administration UI.
 
 Having imported the virtual machine into VirtualBox you will need to attach the network interface to the VM that will be used for connecting from your localhost to your development environment.  use the Host only interface that is created by using the install.sh file in the BaseBox directory.  You can also reuse an existing interface that is a HostOnly interface allowing SSH access from your workstation to the Linux VM.
 
