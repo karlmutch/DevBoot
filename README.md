@@ -25,11 +25,13 @@ The main deployment process is done by creating a Base Box running the BaseBox/b
 cd Ubuntu-14.04/BaseBox
 
 ./install.bat   -- First time only
+
 ./build.bat 
 
 or
 
 ./install.sh    -- First time only
+
 ./build.sh
 
 The second step will read the output from the first step and use it to generate a fully configured Linux Development box file
