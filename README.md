@@ -24,7 +24,7 @@ The main deployment process is done by creating a Base Box running the BaseBox/b
 
 cd Ubuntu-14.04/BaseBox
 
-./install.bat   -- First time only
+./install.bat   -- First time only, will setup all the needed networking adapters
 
 ./build.bat 
 
