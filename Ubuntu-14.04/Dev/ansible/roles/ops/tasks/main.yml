@@ -30,7 +30,8 @@
     - neovim
     - sublime-text-installer
     - tmux
-    - multitail 
+    - multitail
+    - apache2-utils
     - htop
     - glances
     - nmon
@@ -43,16 +44,16 @@
     - gvfs-bin
     - xdg-utils
 
-- name: Download lnav at version 0.8.0
+- name: Download lnav at version 0.8.1
   get_url:
-    url: "https://github.com/tstack/lnav/releases/download/v0.8.0/lnav-0.8.0-linux-64bit.zip"
-    dest: "/tmp/lnav-0.8.0-linux-64bit.zip"
+    url: "https://github.com/tstack/lnav/releases/download/v0.8.1/lnav-0.8.1-linux-64bit.zip"
+    dest: "/tmp/lnav-0.8.1-linux-64bit.zip"
 
-- name: Extract lnav archive at version 0.8.0
-  unarchive: src=/tmp/lnav-0.8.0-linux-64bit.zip dest=/tmp copy=no creates=/tmp/lnav-0.8.0/lnav
+- name: Extract lnav archive at version 0.8.1
+  unarchive: src=/tmp/lnav-0.8.1-linux-64bit.zip dest=/tmp copy=no creates=/tmp/lnav-0.8.1/lnav
 
-- name: Copy extracted lnav 0.8.0 executable to /usr/local/bin
-  copy: src=/tmp/lnav-0.8.0/lnav dest=/usr/local/bin/lnav
+- name: Copy extracted lnav 0.8.1 executable to /usr/local/bin
+  copy: src=/tmp/lnav-0.8.1/lnav dest=/usr/local/bin/lnav
 
 - name: SysDig install
   shell: curl -s https://s3.amazonaws.com/download.draios.com/stable/install-sysdig | sudo bash 
