@@ -52,6 +52,7 @@
     - graphviz
     - pandoc
     - xsel
+    - jq
 
 - name: Install thrift development tools for C++
   apt: name={{ item }} update_cache=yes state=present

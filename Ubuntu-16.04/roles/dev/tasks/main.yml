@@ -13,11 +13,11 @@
       - libxen-dev
       - libxen-4.6
 
-- name: Download Go 1.6.3
-  get_url: url=https://storage.googleapis.com/golang/go1.6.3.linux-amd64.tar.gz dest=/tmp/go1.6.3.linux-amd64.tar.gz
+- name: Download Go 1.7.1
+  get_url: url=https://storage.googleapis.com/golang/go1.7.1.linux-amd64.tar.gz dest=/tmp/go1.7.1.linux-amd64.tar.gz
 
-- name: Install Go 1.6.3 locally for user {{user}}
-  unarchive: src=/tmp/go1.6.3.linux-amd64.tar.gz dest="/home/{{user}}" copy=no creates="/home/{{user}}/go/bin/go"
+- name: Install Go 1.7.1 locally for user {{user}}
+  unarchive: src=/tmp/go1.7.1.linux-amd64.tar.gz dest="/home/{{user}}" copy=no creates="/home/{{user}}/go/bin/go"
 
 - name: Install dev tooling
   apt: name={{ item }} update_cache=yes state=present
@@ -52,19 +52,20 @@
     - graphviz
     - pandoc
     - xsel
+    - jq
 
 - name: Install thrift development tools for C++
   apt: name={{ item }} update_cache=yes state=present
   with_items:
     - automake
-    - bison 
+    - bison
     - flex
-    - g++ 
-    - git 
-    - libboost1.58-all-dev 
-    - libevent-dev 
-    - libssl-dev 
-    - libtool 
-    - make 
+    - g++
+    - git
+    - libboost1.58-all-dev
+    - libevent-dev
+    - libssl-dev
+    - libtool
+    - make
     - pkg-config
 
