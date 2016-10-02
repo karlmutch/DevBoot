@@ -18,6 +18,15 @@
     - unattended-upgrades
     - logwatch
 
+- name: Install packages needed to relay email reports
+  apt: state=installed pkg={{ item }}
+  with_items:
+    - postfix
+    - mailutils
+    - libsasl2-2
+    - ca-certificates
+    - libsasl2-modules
+
 - name: Setup automatic periodic apt updates
   lineinfile: dest=/etc/apt/apt.conf.d/10periodic line="APT::Periodic::Update-Package-Lists \"1\";" state=present
 
@@ -64,6 +73,29 @@
               state=present
   notify: Restart ssh
 
+# Starting with 3 new connections pending authentication the server will 
+# start to drop 50% of the new connections. The probability of random 
+# drop increases linearly with the size of the backlog. By the time the 
+# backlog increases to 10 pending unauthenticated connections, 100% 
+# will be dropped.
+#
+- name: Modify login startup values
+  lineinfile: dest=/etc/ssh/sshd_config
+              regexp="^MaxStartups"
+              line="MaxStartups 3:50:10"
+              state=present
+  notify: Restart ssh
+
+# Allow connects with failed authentication attempts to only 30 seconds from the
+# default of 2 minutes
+#
+- name: Modify login startup values
+  lineinfile: dest=/etc/ssh/sshd_config
+              regexp="^LoginGraceTime"
+              line="LoginGraceTime 30"
+              state=present
+  notify: Restart ssh
+
 - name: Set up Postfix to relay mail to enabled logging security reports
   debconf: name=postfix
            question='{{ item.question }}'
@@ -72,6 +104,75 @@
   with_items:
       - { question: 'postfix/mailname', value: '{{ ansible_fqdn }}', vtype: 'string' }
       - { question: 'postfix/main_mailer_type', value: 'Internet Site', vtype: 'string' }
+
+# Modify the empty relay host lines that is given as a default
+#
+- name: Modify postfix relayhost
+  lineinfile: dest=/etc/postfix/main.cf
+              regexp="^relayhost"
+              line="relayhost = [smtp.gmail.com]:587"
+              state=present
+  notify: Restart postfix
+  when: gmail_user is defined and gmail_app_password is defined
+
+- name: Modify postfix smtp SASL based auth enabled
+  lineinfile: dest=/etc/postfix/main.cf
+              regexp="^smtp_sasl_auth_enable"
+              line="smtp_sasl_auth_enable = yes"
+              state=present
+  notify: Restart postfix
+
+- name: Modify postfix smtp password map for Google application passwords
+  lineinfile: dest=/etc/postfix/main.cf
+              regexp="^smtp_sasl_password_maps"
+              line="smtp_sasl_password_maps = hash:/etc/postfix/sasl/sasl_passwd"
+              state=present
+  notify: Restart postfix
+
+- name: Modify postfix smtp for non anonymous access
+  lineinfile: dest=/etc/postfix/main.cf
+              regexp="^smtp_sasl_security_options"
+              line="smtp_sasl_security_options = noanonymous"
+              state=present
+  notify: Restart postfix
+
+- name: Modify postfix smtp certificate file
+  lineinfile: dest=/etc/postfix/main.cf
+              regexp="^smtp_tls_CAfile"
+              line="smtp_tls_CAfile = /etc/postfix/cacert.pem"
+              state=present
+  notify: Restart postfix
+
+- name: Modify postfix smtp TLS enabled
+  lineinfile: dest=/etc/postfix/main.cf
+              regexp="^smtp_use_tls"
+              line="smtp_use_tls = yes"
+              state=present
+  notify: Restart postfix
+
+- name: Copy thwate root CA file
+  command: cp /etc/ssl/certs/thawte_Primary_Root_CA.pem /etc/postfix/cacert.pem
+
+- name: Create the postfix relay password file 
+  file: path=/etc/postfix/sasl/sasl_password state=touch
+  when: gmail_user is defined and gmail_app_password is defined
+
+- name: Add google mail relay user and password settings
+  lineinfile: dest=/etc/postfix/sasl/sasl_password
+              regexp="^[smtp.gmail.com]"
+              line="[smtp.gmail.com]:587 {{ gmail_user }}@gmail.com:{{ gmail_app_password }}"
+              state=present
+  notify: Restart postfix
+  when: gmail_user is defined and gmail_app_password is defined
+
+- name: Set the postfix relay password file permissions
+  file: path=/etc/postfix/sasl/sasl_password mode=400
+  when: gmail_user is defined and gmail_app_password is defined
+
+- name: Add the security mapping to postfix
+  command: postmap /etc/postfix/sasl/sasl_password
+  notify: Restart postfix
+  when: gmail_user is defined and gmail_app_password is defined
 
 - name: Email log summary daily
   lineinfile: dest=/etc/cron.daily/00logwatch
