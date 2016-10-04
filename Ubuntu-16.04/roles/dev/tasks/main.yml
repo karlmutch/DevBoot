@@ -19,6 +19,15 @@
 - name: Install Go 1.7.1 locally for user {{user}}
   unarchive: src=/tmp/go1.7.1.linux-amd64.tar.gz dest="/home/{{user}}" copy=no creates="/home/{{user}}/go/bin/go"
 
+- name: Download ripgrep
+  get_url: url=https://github.com/BurntSushi/ripgrep/releases/download/0.2.1/ripgrep-0.2.1-x86_64-unknown-linux-musl.tar.gz dest=/tmp/ripgrep.tar.gz
+
+- name: Unpack ripgrep
+  unarchive: src=/tmp/ripgrep.tar.gz dest=/tmp copy=no creates="/tmp/ripgrep-0.2.1-x86_64-unknown-linux-musl/rg"
+
+- name: Install ripgrep to user bin
+  command: mv /tmp/ripgrep-0.2.1-x86_64-unknown-linux-musl/rg /home/{{user}}/bin/rg
+
 - name: Install dev tooling
   apt: name={{ item }} update_cache=yes state=present
   with_items:

@@ -1,5 +1,6 @@
 For installation instructions related to ansible please use the information 
-found at http://docs.ansible.com/ansible/intro_installation.html#getting-ansible
+found at http://docs.ansible.com/ansible/intro_installation.html#getting-ansible.
+The main prerequisite for ansible is that python be installed on the Linux systems.
 
 When using the tasks present within this repository a user account will be created
 using the user ID of the account you start the ansible playbook from automatically.
@@ -8,7 +9,8 @@ and not choose the name of final user account when creating the base machine on
 AWS, DigitalOcean or other infrastructure.
 
 When using this ansible playbook first modify the inventory file to contain 
-information concerning your target Linux system.
+information concerning your target Linux system. The Linux target system
+should be an Ubuntu Server Edition installation 64bit.
 
 Your inventory should contain an entry such as:
 

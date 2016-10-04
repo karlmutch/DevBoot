@@ -20,8 +20,3 @@ The cost for this system is about $6.00 a month.  Increased storage to 2GB of me
 is still only $20.00 a month.
 
 The project was begun labour day weekend 2015. 
-
-Quick Introduction 
-------------------
- 
- Some notes about pre-requisties
