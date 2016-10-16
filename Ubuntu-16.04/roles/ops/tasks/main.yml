@@ -8,6 +8,7 @@
     - ppa:neovim-ppa/unstable
     - ppa:webupd8team/sublime-text-2
     - ppa:webupd8team/sublime-text-3
+    - deb [trusted=yes] https://repo.iovisor.org/apt/xenial xenial-nightly main
 
 - name: Install core tooling for admin and access
   apt: name={{ item }} state=present
@@ -43,6 +44,7 @@
     - libnotify4
     - gvfs-bin
     - xdg-utils
+    - bcc-tools
 
 - name: Download lnav at version 0.8.1
   get_url:

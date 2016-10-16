@@ -1,1 +1,1 @@
-ec2-54-148-54-83.us-west-2.compute.amazonaws.com ansible_connection=ssh        ansible_user=ubuntu
+karlmutch.com ansible_connection=ssh        ansible_user=kmutch
