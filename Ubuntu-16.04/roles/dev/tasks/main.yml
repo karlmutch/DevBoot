@@ -5,6 +5,7 @@
   with_items:
     - ppa:git-core/ppa
     - deb http://security.ubuntu.com/ubuntu xenial-security main universe
+    - ppa:brightbox/ruby-ng
 
 - name: Install rump and unikernel dev tooling, was 4.4 now 4.6
   apt: name={{ item }} state=present
@@ -78,3 +79,8 @@
     - make
     - pkg-config
 
+- name: Install ruby development tools
+  apt: name={{ item }} update_cache=yes state=present
+  with_items:
+    - ruby2.2
+    - ruby2.2-dev
