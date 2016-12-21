@@ -14,20 +14,54 @@
       - libxen-dev
       - libxen-4.6
 
-- name: Download Go 1.7.1
-  get_url: url=https://storage.googleapis.com/golang/go1.7.1.linux-amd64.tar.gz dest=/tmp/go1.7.1.linux-amd64.tar.gz
+- name: Create user bin directory
+  file: path=/home/{{user}}/bin state=directory
 
-- name: Install Go 1.7.1 locally for user {{user}}
-  unarchive: src=/tmp/go1.7.1.linux-amd64.tar.gz dest="/home/{{user}}" copy=no creates="/home/{{user}}/go/bin/go"
+- name: Check if Go 1.7.3 is installed
+  shell: go version
+  register: go_version
+  failed_when: false
+  changed_when: false
 
-- name: Download ripgrep
-  get_url: url=https://github.com/BurntSushi/ripgrep/releases/download/0.2.1/ripgrep-0.2.1-x86_64-unknown-linux-musl.tar.gz dest=/tmp/ripgrep.tar.gz
+- name: Download Go 1.7.3
+  get_url:
+      url: https://storage.googleapis.com/golang/go1.7.3.linux-amd64.tar.gz
+      dest: /tmp/go1.7.3.linux-amd64.tar.gz
+      force: true
+  when: go_version.stdout.find('go version go1.7.3 linux/amd64') == -1 or go_version.rc != 0
 
-- name: Unpack ripgrep
-  unarchive: src=/tmp/ripgrep.tar.gz dest=/tmp copy=no creates="/tmp/ripgrep-0.2.1-x86_64-unknown-linux-musl/rg"
+- name: Install Go 1.7.3 locally for user {{user}}
+  unarchive: 
+    src: /tmp/go1.7.3.linux-amd64.tar.gz
+    dest: "/home/{{user}}"
+    copy: no
+  when: go_version.stdout.find('go version go1.7.3 linux/amd64') == -1 or go_version.rc != 0
 
-- name: Install ripgrep to user bin
-  command: mv /tmp/ripgrep-0.2.1-x86_64-unknown-linux-musl/rg /home/{{user}}/bin/rg
+- name: Check if RipGrep 0.3.2 is installed
+  shell: rg --version
+  register: rg_version
+  ignore_errors: yes
+  failed_when: false
+  changed_when: false
+
+- name: Download RipGrep
+  get_url: 
+    url: https://github.com/BurntSushi/ripgrep/releases/download/0.3.2/ripgrep-0.3.2-x86_64-unknown-linux-musl.tar.gz
+    dest: /tmp/ripgrep.tar.gz
+    force: true
+  when: rg_version.stdout.find('ripgrep 0.3.2') == -1 or rg_version != 0
+
+- name: Unpack RipGrep
+  unarchive:
+    src: /tmp/ripgrep.tar.gz
+    dest: /tmp
+    copy: no
+    creates: "/tmp/ripgrep-0.3.2-x86_64-unknown-linux-musl/rg"
+  when: rg_version.stdout.find('ripgrep 0.3.2') == -1 or rg_version != 0
+
+- name: Install RipGrep to user {{user}} bin
+  command: mv -f /tmp/ripgrep-0.3.2-x86_64-unknown-linux-musl/rg /home/{{user}}/bin/rg
+  when: rg_version.stdout.find('ripgrep 0.3.2') == -1 or rg_version != 0
 
 - name: Install dev tooling
   apt: name={{ item }} update_cache=yes state=present
