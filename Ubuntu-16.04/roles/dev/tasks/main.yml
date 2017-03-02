@@ -17,27 +17,27 @@
 - name: Create user bin directory
   file: path=/home/{{user}}/bin state=directory
 
-- name: Check if Go 1.7.3 is installed
+- name: Check if Go 1.7.5 is installed
   shell: go version
   register: go_version
   failed_when: false
   changed_when: false
 
-- name: Download Go 1.7.3
+- name: Download Go 1.7.5
   get_url:
-      url: https://storage.googleapis.com/golang/go1.7.3.linux-amd64.tar.gz
-      dest: /tmp/go1.7.3.linux-amd64.tar.gz
+      url: https://storage.googleapis.com/golang/go1.7.5.linux-amd64.tar.gz
+      dest: /tmp/go1.7.5.linux-amd64.tar.gz
       force: true
-  when: go_version.stdout.find('go version go1.7.3 linux/amd64') == -1 or go_version.rc != 0
+  when: go_version.stdout.find('go version go1.7.5 linux/amd64') == -1
 
-- name: Install Go 1.7.3 locally for user {{user}}
-  unarchive: 
-    src: /tmp/go1.7.3.linux-amd64.tar.gz
+- name: Install Go 1.7.5 locally for user {{user}}
+  unarchive:
+    src: /tmp/go1.7.5.linux-amd64.tar.gz
     dest: "/home/{{user}}"
     copy: no
-  when: go_version.stdout.find('go version go1.7.3 linux/amd64') == -1 or go_version.rc != 0
+  when: go_version.stdout.find('go version go1.7.5 linux/amd64') == -1
 
-- name: Check if RipGrep 0.3.2 is installed
+- name: Check if RipGrep 0.4.0 is installed
   shell: rg --version
   register: rg_version
   ignore_errors: yes
@@ -46,22 +46,22 @@
 
 - name: Download RipGrep
   get_url: 
-    url: https://github.com/BurntSushi/ripgrep/releases/download/0.3.2/ripgrep-0.3.2-x86_64-unknown-linux-musl.tar.gz
-    dest: /tmp/ripgrep.tar.gz
+    url: https://github.com/BurntSushi/ripgrep/releases/download/0.4.0/ripgrep-0.4.0-x86_64-unknown-linux-musl.tar.gz
+    dest: /tmp/ripgrep-0.4.0-x86_64-unknown-linux-musl.tar.gz
     force: true
-  when: rg_version.stdout.find('ripgrep 0.3.2') == -1 or rg_version != 0
+  when: rg_version.stdout.find('ripgrep 0.4.0') == -1
 
 - name: Unpack RipGrep
   unarchive:
-    src: /tmp/ripgrep.tar.gz
+    src: /tmp/ripgrep-0.4.0-x86_64-unknown-linux-musl.tar.gz
     dest: /tmp
     copy: no
-    creates: "/tmp/ripgrep-0.3.2-x86_64-unknown-linux-musl/rg"
-  when: rg_version.stdout.find('ripgrep 0.3.2') == -1 or rg_version != 0
+    creates: "/tmp/ripgrep-0.4.0-x86_64-unknown-linux-musl/rg"
+  when: rg_version.stdout.find('ripgrep 0.4.0') == -1
 
 - name: Install RipGrep to user {{user}} bin
-  command: mv -f /tmp/ripgrep-0.3.2-x86_64-unknown-linux-musl/rg /home/{{user}}/bin/rg
-  when: rg_version.stdout.find('ripgrep 0.3.2') == -1 or rg_version != 0
+  command: mv -f /tmp/ripgrep-0.4.0-x86_64-unknown-linux-musl/rg /home/{{user}}/bin/rg
+  when: rg_version.stdout.find('ripgrep 0.4.0') == -1
 
 - name: Install dev tooling
   apt: name={{ item }} update_cache=yes state=present
@@ -119,3 +119,10 @@
   with_items:
     - ruby2.2
     - ruby2.2-dev
+
+- name: Travis-CI Command Line Client
+  gem:
+    name: travis
+    version: 1.8.6
+    state: present
+    user_install: yes
