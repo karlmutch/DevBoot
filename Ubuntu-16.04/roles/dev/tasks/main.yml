@@ -120,9 +120,5 @@
     - ruby2.2
     - ruby2.2-dev
 
-- name: Travis-CI Command Line Client
-  gem:
-    name: travis
-    version: 1.8.6
-    state: present
-    user_install: yes
+- name: Install Bundler
+  command: bash -lc "gem install travis -v 1.8.6 --no-rdoc --no-ri"

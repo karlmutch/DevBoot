@@ -76,3 +76,6 @@
   with_items:
     - ruby2.2
     - ruby2.2-dev
+
+- name: Install Bundler
+  command: bash -lc "gem install travis -v 1.8.6 --no-rdoc --no-ri"
