@@ -37,6 +37,7 @@
     - default-jdk 
     - ant 
     - mercurial
+    - ncurses-dev
     - libpcre3-dev
     - libgpm-dev
     - libsqlite3-dev
