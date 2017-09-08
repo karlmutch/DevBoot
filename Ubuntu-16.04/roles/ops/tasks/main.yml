@@ -46,54 +46,55 @@
     - gvfs-bin
     - xdg-utils
     - bcc-tools
+    - libhttp-parser2.1
 
-- name: Check if lnav 0.8.1 is installed
+- name: Check if lnav 0.8.2 is installed
   shell: lnav -h
   register: lnav_version
   failed_when: false
   changed_when: false
 
-- name: Download lnav at version 0.8.1
+- name: Download lnav at version 0.8.2
   get_url:
-    url: "https://github.com/tstack/lnav/releases/download/v0.8.1/lnav-0.8.1-linux-64bit.zip"
-    dest: "/tmp/lnav-0.8.1-linux-64bit.zip"
-  when: lnav_version.stdout.find("lnav 0.8.1") == -1 or lnav_version.rc != 0
+    url: "https://github.com/tstack/lnav/releases/download/v0.8.2/lnav-0.8.2-linux-64bit.zip"
+    dest: "/tmp/lnav-0.8.2-linux-64bit.zip"
+  when: lnav_version.stdout.find("lnav 0.8.2") == -1 or lnav_version.rc != 0
 
-- name: Extract lnav archive at version 0.8.1
+- name: Extract lnav archive at version 0.8.2
   unarchive: 
-    src: /tmp/lnav-0.8.1-linux-64bit.zip
+    src: /tmp/lnav-0.8.2-linux-64bit.zip
     dest: /tmp 
     copy: no
-  when: lnav_version.stdout.find("lnav 0.8.1") == -1 or lnav_version.rc != 0
+  when: lnav_version.stdout.find("lnav 0.8.2") == -1 or lnav_version.rc != 0
 
-- name: Copy extracted lnav 0.8.1 executable to /usr/local/bin
-  command: mv -f /tmp/lnav-0.8.1/lnav /usr/local/bin/lnav
-  when: lnav_version.stdout.find("lnav 0.8.1") == -1 or lnav_version.rc != 0
+- name: Copy extracted lnav 0.8.2 executable to /usr/local/bin
+  command: mv -f /tmp/lnav-0.8.2/lnav /usr/local/bin/lnav
+  when: lnav_version.stdout.find("lnav 0.8.2") == -1 or lnav_version.rc != 0
 
-- name: Check if exa 0.4.0 is installed
+- name: Check if exa 0.7.0 is installed
   shell: exa --version
   register: exa_version
   failed_when: false
   changed_when: false
 
-- name: Download Rust based exa 0.4.0
+- name: Download Rust based exa 0.7.0
   get_url:
-    url: "https://github.com/ogham/exa/releases/download/v0.4.0/exa-linux-x86_64.zip"
+    url: "https://github.com/ogham/exa/releases/download/v0.7.0/exa-linux-x86_64.zip"
     dest: "/tmp/exa.zip"
     force: yes
-  when: exa_version.stdout.find('exa 0.4.0') == -1 or exa_version.rc != 0
+  when: exa_version.stdout.find('exa 0.7.0') == -1 or exa_version.rc != 0
 
-- name: Extract exa version 0.4.0
+- name: Extract exa version 0.7.0
   unarchive: src=/tmp/exa.zip dest=/tmp copy=no creates=/tmp/exa-linux-x86_64
-  when: exa_version.stdout.find('exa 0.4.0') == -1 or exa_version.rc != 0
+  when: exa_version.stdout.find('exa 0.7.0') == -1 or exa_version.rc != 0
 
 - name: Copy extracted exa executable to /usr/local/bin
   command: mv /tmp/exa-linux-x86_64 /usr/local/bin/exa
-  when: exa_version.stdout.find('exa 0.4.0') == -1 or exa_version.rc != 0
+  when: exa_version.stdout.find('exa 0.7.0') == -1 or exa_version.rc != 0
 
 - name: Make Rust based exa executable
   file: path=/usr/local/bin/exa mode="u+x,g+x,o+x"
-  when: exa_version.stdout.find('exa 0.4.0') == -1 or exa_version.rc != 0
+  when: exa_version.stdout.find('exa 0.7.0') == -1 or exa_version.rc != 0
 
 - name: Check if sift 0.9.0 is installed
   shell: sift --version
