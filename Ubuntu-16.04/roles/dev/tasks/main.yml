@@ -96,6 +96,7 @@
     - python-pygments
     - graphviz
     - pandoc
+    - xclip
     - xsel
     - jq
     - grc
