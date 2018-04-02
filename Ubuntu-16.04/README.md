@@ -24,8 +24,8 @@ Logout of the target linux system and test that it can be accessed using ssh fro
 machine driving the upgrade using just the keys.
 
 Your ansible_user must also be able to sudo without needing a password. If this is not the
-case read the instructions at http://sleepyhead.de/howto/?href=sudo for more information
-how to remove the need for the ansible_user to enter their password.
+case read the instructions at https://askubuntu.com/questions/192050/how-to-run-sudo-command-with-no-password
+for more information on how to remove the need for the ansible_user to enter their password.
 
 These ansible files are able to setup a mail relay that uses your google gmail account.
 

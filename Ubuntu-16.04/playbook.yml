@@ -8,7 +8,6 @@
     - docker
     - user
     - security
-    - postgres
     - ops
     - dev
 
