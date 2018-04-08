@@ -48,7 +48,10 @@
     copy: no
   when: not goPath.stat.exists
 
-- name: Check if RipGrep 0.4.0 is installed
+- name: add the gorun command as a binary file handled for Linux
+  lineinfile: dest=/proc/sys/fs/binfmt_misc/register line=":golang:E::go::/usr/local/bin/gorun:OC" regexp="^:golang:E::go::/usr/local/bin/gorun:OC"
+
+- name: Check if RipGrep 0.8.1 is installed
   shell: rg --version
   register: rg_version
   ignore_errors: yes
@@ -57,22 +60,40 @@
 
 - name: Download RipGrep
   get_url: 
-    url: https://github.com/BurntSushi/ripgrep/releases/download/0.4.0/ripgrep-0.4.0-x86_64-unknown-linux-musl.tar.gz
-    dest: /tmp/ripgrep-0.4.0-x86_64-unknown-linux-musl.tar.gz
+    url: https://github.com/BurntSushi/ripgrep/releases/download/0.8.1/ripgrep-0.8.1-x86_64-unknown-linux-musl.tar.gz
+    dest: /tmp/ripgrep-0.8.1-x86_64-unknown-linux-musl.tar.gz
     force: true
-  when: rg_version.stdout.find('ripgrep 0.4.0') == -1
+  when: rg_version.stdout.find('ripgrep 0.8.1') == -1
 
 - name: Unpack RipGrep
   unarchive:
-    src: /tmp/ripgrep-0.4.0-x86_64-unknown-linux-musl.tar.gz
+    src: /tmp/ripgrep-0.8.1-x86_64-unknown-linux-musl.tar.gz
     dest: /tmp
     copy: no
-    creates: "/tmp/ripgrep-0.4.0-x86_64-unknown-linux-musl/rg"
-  when: rg_version.stdout.find('ripgrep 0.4.0') == -1
+    creates: "/tmp/ripgrep-0.8.1-x86_64-unknown-linux-musl/rg"
+  when: rg_version.stdout.find('ripgrep 0.8.1') == -1
 
 - name: Install RipGrep to user {{user}} bin
-  command: mv -f /tmp/ripgrep-0.4.0-x86_64-unknown-linux-musl/rg /home/{{user}}/bin/rg
-  when: rg_version.stdout.find('ripgrep 0.4.0') == -1
+  command: mv -f /tmp/ripgrep-0.8.1-x86_64-unknown-linux-musl/rg /home/{{user}}/bin/rg
+  when: rg_version.stdout.find('ripgrep 0.8.1') == -1
+
+- name: Check if direnv 2.15.2 is installed
+  shell: direnv version
+  register: direnv_version
+  ignore_errors: yes
+  failed_when: false
+  changed_when: false
+
+- name: Download direnv 2.15.2
+  get_url:
+    url: https://github.com/direnv/direnv/releases/download/v2.15.2/direnv.linux-amd64
+    dest: /home/{{user}}/bin/direnv
+    force: true
+  when: direnv_version.stdout.find('2.15.2') == -1
+
+- name: Enable direnv
+  file: dest=/home/{{user}}/bin/direnv mode=a+x
+  when: direnv_version.stdout.find('2.15.2') == -1
 
 - name: Install dev tooling
   apt: name={{ item }} update_cache=yes state=present

@@ -16,6 +16,7 @@
     - xauth
     - rsync
     - most
+    - tree
     - unzip
     - mosh
     - wget
