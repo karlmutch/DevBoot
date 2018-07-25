@@ -2,21 +2,25 @@ Development Environments Project
 ================================
 
 
-This project was motivated by the need to create and deploy personal development systems using Linux.
+This project was motivated by the need to repeatedly create and deploy personal development systems using Linux.
 
-The project contains 2 different strategies for provisioning and deploying working systems.  The first set of 
-development systems I used used were based upon having locally deployed development systems on Laptops and workstations.
-The second deployment strategy shifted to being deployed and hosted within both AWS and DigitalOcean.
+To use tooling within this project a copy of Ansible must be installed and the target systems will need python
+installed, along with remote SSH access enabled.
 
-The first deployments were done using Ubuntu 14.04 LTS and consequently can be found in the Ubuntu-14.04 directory.
+The project contains 2 different configurations for provisioning and deploying working development systems.
+The first set of development systems used were based upon having locally deployed development systems on 
+Laptops and workstations.  The second deployment strategy shifted to being deployed and hosted within 
+both AWS and DigitalOcean.  This project allows both approaches.
 
-The later deployments were done using Ubuntu 16.04 and cab be found in the Ubuntu-16.04 directory.
+The first, now deprecated, deployments were done using Ubuntu 14.04 LTS,  obviously in the Ubuntu-14.04 directory.
+
+The later deployments were done using Ubuntu 16.04, again in the Ubuntu-16.04 directory.
 
 The motivation behind the move to using DigitalOcean and cloud in general has been the introduction of
 two-factor authentication and rock bottom costs for using cloud based offerings.  My development tends
-to be using tools such as GoLang, and vim-go going for minimal approachs to solving problems and
-so the Ubuntu 16.04 machines being used require only 512 MB of memory, 1 or 2 cores and 20GB of disk for the base OS.
-The cost for this system is about $6.00 a month.  Increased storage to 2GB of memory and 40 GB disk system 
-is still only $20.00 a month.
+to be using tools such as GoLang, and vim-go opting for minimalist approachs to creating software solutions.
+The Ubuntu 16.04 machines I use require less than 1Gb of memory, 1 core, and 25GB of disk for the base OS.
+The cost for this system is about $6.00 a month hosted by DigitalOcean.  Increasing capacity to 2GB of 
+memory and 50 GB disk system is still only $11.00 a month, all prices including taxes.
 
 The project was begun labour day weekend 2015. 

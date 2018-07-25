@@ -28,7 +28,6 @@
     - python-pip
     - python3-dev
     - python3-pip
-    - golang-1.10
     - cloud-image-utils
     - neovim
     - sublime-text-installer
@@ -50,28 +49,28 @@
     - bcc-tools
     - libhttp-parser2.1
 
-- name: Check if lnav 0.8.2 is installed
+- name: Check if lnav 0.8.3 is installed
   shell: lnav -h
   register: lnav_version
   failed_when: false
   changed_when: false
 
-- name: Download lnav at version 0.8.2
+- name: Download lnav at version 0.8.3
   get_url:
-    url: "https://github.com/tstack/lnav/releases/download/v0.8.2/lnav-0.8.2-linux-64bit.zip"
-    dest: "/tmp/lnav-0.8.2-linux-64bit.zip"
-  when: lnav_version.stdout.find("lnav 0.8.2") == -1 or lnav_version.rc != 0
+    url: "https://github.com/tstack/lnav/releases/download/v0.8.3/lnav-0.8.3-linux-64bit.zip"
+    dest: "/tmp/lnav-0.8.3-linux-64bit.zip"
+  when: lnav_version.stdout.find("lnav 0.8.3") == -1 or lnav_version.rc != 0
 
-- name: Extract lnav archive at version 0.8.2
+- name: Extract lnav archive at version 0.8.3
   unarchive: 
-    src: /tmp/lnav-0.8.2-linux-64bit.zip
+    src: /tmp/lnav-0.8.3-linux-64bit.zip
     dest: /tmp 
     copy: no
-  when: lnav_version.stdout.find("lnav 0.8.2") == -1 or lnav_version.rc != 0
+  when: lnav_version.stdout.find("lnav 0.8.3") == -1 or lnav_version.rc != 0
 
-- name: Copy extracted lnav 0.8.2 executable to /usr/local/bin
-  command: mv -f /tmp/lnav-0.8.2/lnav /usr/local/bin/lnav
-  when: lnav_version.stdout.find("lnav 0.8.2") == -1 or lnav_version.rc != 0
+- name: Copy extracted lnav 0.8.3 executable to /usr/local/bin
+  command: mv -f /tmp/lnav-0.8.3/lnav /usr/local/bin/lnav
+  when: lnav_version.stdout.find("lnav 0.8.3") == -1 or lnav_version.rc != 0
 
 - name: Check if exa 0.8.0 is installed
   shell: exa --version

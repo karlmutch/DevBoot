@@ -14,7 +14,7 @@ should be an Ubuntu Server Edition installation 64bit.
 
 Your inventory should contain an entry such as:
 
-karlmutch.com ansible_connection=ssh        ansible_user=ubuntu
+```karlmutch.com ansible_connection=ssh        ansible_user=ubuntu```
 
 Now copy the id_rsa.pub file from the machine on which the ansible playbook will be initiated 
 to your new Linux system. Specifically you need to append your public key to the 
@@ -33,7 +33,7 @@ The gmail details must be configured as host variables as documented
 here, http://docs.ansible.com/ansible/intro_inventory.html#host-variables.
 A short hand option is to add these to the inventory file, for example:
 
-karlmutch.com ansible_connection=ssh        ansible_user=ubuntu gmail_user=example@gmail.com gmail_app_password=abcdefghijkl
+```karlmutch.com ansible_connection=ssh        ansible_user=ubuntu gmail_user=example@gmail.com gmail_app_password=abcdefghijkl```
 
 The two variables needed are, gmail_user and gmail_app_password. If these are not present your 
 postfix server will not forward system reports to your gmail account.  Generating an application
@@ -44,4 +44,10 @@ not share these passwords between accounts or with other people.
 
 After setting the inventory file and any variables up, use the ansible command to run it as follows:
 
-ansible-playbook -i ./inventory playbook.yml
+```ansible-playbook -i ./inventory playbook.yml```
+
+If you wish to update the localhost on which your development is being done you can use a 
+command such as the following to update an existing machine with an existing developer
+account.
+
+```ansible-playbook -i "localhost," --become-user=kmutch -u kmutch -c local limited.yml -u kmutch ```
