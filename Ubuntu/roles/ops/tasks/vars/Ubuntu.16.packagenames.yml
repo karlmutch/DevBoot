@@ -3,3 +3,4 @@ package_repos:
   - ppa:gnome-terminator
   - ppa:webupd8team/sublime-text-2
   - ppa:webupd8team/sublime-text-3
+  - ppa:dawidd0811/neofetch

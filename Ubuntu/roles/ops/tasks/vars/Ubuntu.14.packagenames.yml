@@ -4,3 +4,4 @@ package_repos:
   - ppa:webupd8team/sublime-text-2
   - ppa:webupd8team/sublime-text-3
   - ppa:djcj/screenfetch
+  - ppa:dawidd0811/neofetch
