@@ -1,14 +1,47 @@
 ---
+
+- name: read vars
+  include_vars: '{{ item }}'
+  with_first_found:
+    - files:
+        # "ansible_distribution" may be: "Debian", "SLES", "Ubuntu", "CentOS"
+        # "ansible_distribution_version" may be: "9.0", "12.2", "14.04", "16.04", "18.04", "7.3.1611"
+        # "ansible_distribution_major_version" may be: "9", "12", "16.04"
+        # "ansible_os_family" may be: "Debian", "RedHat", "Suse"
+        # Upper/lower case is important
+
+        - "{{ ansible_distribution }}.{{ ansible_distribution_version }}.packagenames.yml"
+        # examples might include: "SLES.12.2", "Ubuntu.16.04", "CentOS.7.3.1611", "Debian.8.7"
+
+        - "{{ ansible_distribution }}.{{ ansible_distribution_major_version }}.packagenames.yml"
+        # examples might include: "SLES.12", "Ubuntu.14", "Ubuntu.16", "Ubuntu.18", "CentOS.7", "Debian.9"
+
+        - "{{ ansible_distribution }}.packagenames.yml"
+        # examples might include: "Debian", "SLES", "Ubuntu", "CentOS"
+
+        - "{{ ansible_os_family }}.packagenames.yml"
+        # examples might includ: "Debian", "Suse, "RedHat"
+
+        - "default.packagenames.yml"
+      paths: "./vars/"
+
+- name: install OS Specific repositories
+  apt_repository: repo='{{ item }}' update_cache=yes
+  when: package_repos is defined
+  with_items: "{{ package_repos }}"
+
+
+- name: install OS Specific packages
+  package: name='{{ package_names }}' state=present
+  when: package_names is defined
+
 - name: Add development tool sets ubuntu repositories
   apt_repository: repo='{{ item }}' update_cache=yes
   with_items:
     - ppa:git-core/ppa
-    - ppa:gnome-terminator
     - ppa:pi-rho/dev
     - ppa:neovim-ppa/unstable
-    - ppa:webupd8team/sublime-text-2
-    - ppa:webupd8team/sublime-text-3
-    - deb [trusted=yes] https://repo.iovisor.org/apt/xenial xenial-nightly main
+    - deb [trusted=yes] https://repo.iovisor.org/apt/{{ansible_distribution_release}} {{ansible_distribution_release}}-nightly main
 
 - name: Install core tooling for admin and access
   apt: name={{ item }} state=present
@@ -25,12 +58,9 @@
     - terminator
     - vim
     - python-dev
-    - python-pip
     - python3-dev
     - python3-pip
-    - cloud-image-utils
     - neovim
-    - sublime-text-installer
     - tmux
     - multitail
     - apache2-utils
@@ -47,7 +77,20 @@
     - gvfs-bin
     - xdg-utils
     - bcc-tools
-    - libhttp-parser2.1
+
+- name: Install core tooling for admin and access, Ubuntu 14.04 specific
+  apt: name={{ item }} state=present install_recommends=yes
+  with_items:
+    - python-pip
+    - cloud-image-utils
+  when: (ansible_distribution == "Ubuntu") and (ansible_distribution_major_version == "14")
+
+- name: Install core tooling for admin and access, Ubuntu 16.01+
+  apt: name={{ item }} state=present
+  with_items:
+    - python-pip
+    - cloud-image-utils
+  when: (ansible_distribution != "Ubuntu") or (ansible_distribution_major_version != "14")
 
 - name: Check if lnav 0.8.3 is installed
   shell: lnav -h

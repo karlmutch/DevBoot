@@ -11,7 +11,7 @@
   lineinfile: regexp="^PasswordAuthentication " line="PasswordAuthentication no" dest=/etc/ssh/sshd_config state=present
 
 - name: Install packages that assist with security
-  apt: state=installed pkg={{ item }}
+  apt: state=present pkg={{ item }}
   with_items:
     - ufw
     - fail2ban
@@ -19,7 +19,7 @@
     - logwatch
 
 - name: Install packages needed to relay email reports
-  apt: state=installed pkg={{ item }}
+  apt: state=present pkg={{ item }}
   with_items:
     - postfix
     - mailutils
@@ -44,7 +44,7 @@
 - name: Allow ssh traffic
   ufw: rule=limit port={{ ssh_port | default("22") }} proto=tcp
   notify:
-    - restart ufw
+    - Restart ufw
 
 # Allow OpenSSH. (Note that as ufw manages its own state, simply removing
 # a rule=allow task can leave those ports exposed. Either use delete=yes
@@ -52,12 +52,12 @@
 - name: Allow OpenSSH traffic
   ufw: rule=allow name=OpenSSH
   notify:
-    - restart ufw
+    - Restart ufw
 
 - name: Allow mosh traffic
   ufw: rule=allow proto=udp port=60000:60010
   notify:
-    - restart ufw
+    - Restart ufw
 
 
 # Set logging
@@ -76,7 +76,7 @@
     - { direction: 'incoming', policy: 'deny' }
     - { direction: 'outgoing', policy: 'allow' }
   notify:
-    - restart ufw
+    - Restart ufw
 
 - name: Disallow root SSH access
   lineinfile: dest=/etc/ssh/sshd_config
