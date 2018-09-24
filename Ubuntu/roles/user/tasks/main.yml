@@ -14,14 +14,28 @@
   user: name={{user}} group={{user}} groups=sudo,adm,docker append=yes shell=/bin/zsh state=present
 
 - name: Add local developer ssh keys
-  user: name={{user}} ssh_key_file=.ssh/id_rsa ssh_key_bits=4096 generate_ssh_key=yes
-
-- name: Copy Public Key of the installers account into the destination machine
-  copy: src=id_rsa.pub dest=/tmp/id_rsa.pub
+  user: name={{user}} ssh_key_file=.ssh/id_ed25519 ssh_key_type=ed25519 generate_ssh_key=yes
 
 - name: Add developer SSH key
-  authorized_key: user={{user}} key="{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+  authorized_key: user={{user}} key="{{ lookup('file', '~/.ssh/id_ed25519.pub') }}"
 
 - name: Change sudo group to not need passwords
   lineinfile: dest=/etc/sudoers state=present line='{{user}} ALL=(ALL) NOPASSWD:ALL' validate='visudo -cf %s'
 
+- name: Read SSH public key to authorize
+  shell: cat /home/{{user}}/.ssh/id_ed25519.pub
+  register: ssh_pub_key
+
+- name: Authorize key with GitHub for {{ ansible_hostname }} {{ user }}
+  local_action:
+    module: github_key
+    name: Access Key for {{ ansible_hostname }} {{ ansible_default_ipv4.address }} {{ ansible_default_ipv4.macaddress }}
+    token: "{{ lookup('env', 'GITHUB_TOKEN') }}"
+    pubkey: "{{ ssh_pub_key.stdout }}"
+  when: lookup('env', 'GITHUB_TOKEN') != ""
+
+- name: Notify Github SSH key injection status
+  debug:
+    msg: "Github access was not activated, GITHUB_TOKEN was not set in the local machines environment variables"
+    verbosity: 0
+  when: lookup('env', 'GITHUB_TOKEN') == ""

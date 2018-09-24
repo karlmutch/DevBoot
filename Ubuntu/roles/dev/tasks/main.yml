@@ -39,6 +39,7 @@
   with_items:
     - ppa:git-core/ppa
     - ppa:brightbox/ruby-ng
+    - ppa:duggan/jo
 
 - name: Install rump and unikernel dev tooling, was 4.4 now 4.6
   apt: name={{ item }} state=present
@@ -178,6 +179,7 @@
     - xclip
     - xsel
     - jq
+    - jo
     - grc
 
 - name: Add 16.04+ git toolsets ubuntu repositories

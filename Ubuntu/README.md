@@ -8,13 +8,39 @@ This means you should use the account that the cloud provider offers by default
 and not choose the name of final user account when creating the base machine on 
 AWS, DigitalOcean or other infrastructure.
 
-When using this ansible playbook first modify the inventory file to contain 
+Github tokens
+---
+In addition to setting up the user account github access can also be enabled
+for the machine and user account if the GITHUB_TOKEN environment variable is set
+on the controlling host shell.  If you do use GITHUB_TOKEN be sure that on the
+scopes for that token on github the admin:public_key rights are set.  This is
+the only right needed and so you can generate a one time key with nothing else
+set use for provisioning and then delete it after installation is complete.
+
+When setting up github the new user account will be granted access using its own
+id_ed25519 ssh public key.  The key will be added to the account of the original user
+with a title something like "Access Key for MyTest 174.16.7.4 ff:df:8c:82:a0:34".
+
+A caveat is that the token used to generate the key and your actual SSH key are 
+both linked within Github.  Deleting the TOKEN will kill the SSH keys and revoke access
+to the machine and user account created by DevBoot.
+
+Regenerating the same token will retain access and remove the ability of an evesdropper 
+to keep creating new SSH keys after you have completed your deployment.
+
+Ansible Inventory setup
+---
+
+When using this ansible playbook first modify the inventory file to contain
 information concerning your target Linux system. The Linux target system
 should be an Ubuntu Server Edition installation 64bit.
 
 Your inventory should contain an entry such as:
 
 ```karlmutch.com ansible_connection=ssh        ansible_user=ubuntu```
+
+Bare metal and non cloud deployments
+---
 
 Now copy the id_rsa.pub file from the machine on which the ansible playbook will be initiated 
 to your new Linux system. Specifically you need to append your public key to the 
@@ -26,6 +52,9 @@ machine driving the upgrade using just the keys.
 Your ansible_user must also be able to sudo without needing a password. If this is not the
 case read the instructions at https://askubuntu.com/questions/192050/how-to-run-sudo-command-with-no-password
 for more information on how to remove the need for the ansible_user to enter their password.
+
+Mail relays
+---
 
 These ansible files are able to setup a mail relay that uses your google gmail account.
 
@@ -41,6 +70,9 @@ password can be done after logging into your GMail account then visiting the pag
 https://security.google.com/settings/security/apppasswords to create a new application password.
 You must generate one password for each application you will be used with your GMail account, do
 not share these passwords between accounts or with other people.
+
+Usage
+---
 
 After setting the inventory file and any variables up, use the ansible command to run it as follows:
 
