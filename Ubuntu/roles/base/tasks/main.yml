@@ -4,9 +4,14 @@
   line='UseDNS no'"
   tags: install
 
+- name: Test if the cloud instance config file is present for Ubuntu
+  stat: path=/etc/cloud/cloud.cfg
+  register: cloud
+
 - name: Maintain hostname after reboots within cloud environments
   lineinfile: "state=present path=/etc/cloud/cloud.cfg regexp='^preserve_hostname:' line='preserve_hostname: true'"
   tags: install
+  when: cloud.stat.exists
 
 - name: set Ubuntu keyserver
   apt_key: keyserver=keyserver.ubuntu.com id=36A1D7869245C8950F966E92D8576A8BA88D21E9

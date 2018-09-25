@@ -99,7 +99,7 @@
     #group: root
     #mode: 0200
 
-- name: Check if RipGrep 0.9.0 is installed
+- name: Check if RipGrep 0.10.0 is installed
   shell: rg --version
   register: rg_version
   ignore_errors: yes
@@ -108,26 +108,26 @@
 
 - name: Download RipGrep
   get_url: 
-    url: https://github.com/BurntSushi/ripgrep/releases/download/0.9.0/ripgrep-0.9.0-x86_64-unknown-linux-musl.tar.gz
-    dest: /tmp/ripgrep-0.9.0-x86_64-unknown-linux-musl.tar.gz
+    url: https://github.com/BurntSushi/ripgrep/releases/download/0.10.0/ripgrep-0.10.0-x86_64-unknown-linux-musl.tar.gz
+    dest: /tmp/ripgrep-0.10.0-x86_64-unknown-linux-musl.tar.gz
     force: true
-  when: rg_version.stdout.find('ripgrep 0.9.0') == -1
+  when: rg_version.stdout.find('ripgrep 0.10.0') == -1
 
 - name: Unpack RipGrep
   unarchive:
-    src: /tmp/ripgrep-0.9.0-x86_64-unknown-linux-musl.tar.gz
+    src: /tmp/ripgrep-0.10.0-x86_64-unknown-linux-musl.tar.gz
     dest: /tmp
     copy: no
-    creates: "/tmp/ripgrep-0.9.0-x86_64-unknown-linux-musl/rg"
-  when: rg_version.stdout.find('ripgrep 0.9.0') == -1
+    creates: "/tmp/ripgrep-0.10.0-x86_64-unknown-linux-musl/rg"
+  when: rg_version.stdout.find('ripgrep 0.10.0') == -1
 
 - name: Set Ripgrep ownership
-  file: dest=/tmp/ripgrep-0.9.0-x86_64-unknown-linux-musl/rg mode=a+x group={{user}} owner={{user}}
-  when: rg_version.stdout.find('ripgrep 0.9.0') == -1
+  file: dest=/tmp/ripgrep-0.10.0-x86_64-unknown-linux-musl/rg mode=a+x group={{user}} owner={{user}}
+  when: rg_version.stdout.find('ripgrep 0.10.0') == -1
 
 - name: Install RipGrep to user {{user}} bin
-  command: mv -f /tmp/ripgrep-0.9.0-x86_64-unknown-linux-musl/rg /home/{{user}}/bin/rg
-  when: rg_version.stdout.find('ripgrep 0.9.0') == -1
+  command: mv -f /tmp/ripgrep-0.10.0-x86_64-unknown-linux-musl/rg /home/{{user}}/bin/rg
+  when: rg_version.stdout.find('ripgrep 0.10.0') == -1
 
 - name: Check if direnv 2.17.0 is installed
   shell: direnv version
