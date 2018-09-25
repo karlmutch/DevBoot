@@ -42,8 +42,8 @@ Your inventory should contain an entry such as:
 Bare metal and non cloud deployments
 ---
 
-Now copy the id_rsa.pub file from the machine on which the ansible playbook will be initiated 
-to your new Linux system. Specifically you need to append your public key to the 
+Now copy the id_ed25519.pub file from the machine on which the ansible playbook will be played
+on your new Linux system. Specifically you need to append your public key to the 
 the authorized_keys file in the .ssh directory of the target system.
 
 Logout of the target linux system and test that it can be accessed using ssh from the
