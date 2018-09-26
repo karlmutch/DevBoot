@@ -80,6 +80,8 @@
   unarchive:
     src: /tmp/go1.11.linux-amd64.tar.gz
     dest: "/home/{{user}}"
+    group: "{{user}}"
+    owner: "{{user}}"
     copy: no
   when: not goPath.stat.exists
 
