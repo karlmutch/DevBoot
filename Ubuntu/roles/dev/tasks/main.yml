@@ -147,6 +147,24 @@
   file: dest=/home/{{user}}/bin/direnv mode=a+x group={{user}} owner={{user}}
   when: direnv_version.stdout.find('2.17.0') == -1
 
+- name: Check if grv 0.3.0 is installed
+  shell: grv version
+  register: grv_version
+  ignore_errors: yes
+  failed_when: false
+  changed_when: false
+
+- name: Download grv 0.3.0
+  get_url:
+    url: https://github.com/rgburke/grv/releases/download/v0.3.0/grv_v0.3.0_linux64
+    dest: /home/{{user}}/bin/grv
+    force: true
+  when: grv_version.stdout.find('0.3.0') == -1
+
+- name: Enable grv
+  file: dest=/home/{{user}}/bin/grv mode=a+x group={{user}} owner={{user}}
+  when: grv_version.stdout.find('0.3.0') == -1
+
 - name: Install dev tooling
   apt: name={{ item }} update_cache=yes state=present
   with_items:
