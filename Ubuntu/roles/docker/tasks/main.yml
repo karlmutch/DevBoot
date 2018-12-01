@@ -2,6 +2,7 @@
 - name: Install general certs
   apt: name={{ item }} state=present
   with_items:
+    - curl
     - ca-certificates
     - apt-transport-https
 
@@ -21,6 +22,9 @@
   become: true
   shell: /usr/sbin/update-ca-certificates -f
 
+- name: Add the docker group
+  group: name=docker gid=998 state=present
+
 # Using apt-key within the ansible python code breaks on Ubuntu 14.04 due to openssl package dependencies breaking
 - name: Add Docker GPG key
   command: bash -lc "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -"
@@ -28,6 +32,7 @@
 - name: Add Docker APT repository
   apt_repository:
     repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ansible_distribution_release}} stable
+  when: ansible_architecture == "x86_64"
 
 - name: Install Docker CE and it dependencies
   apt:
@@ -35,14 +40,10 @@
     state: present
     update_cache: yes
   with_items:
-    - apt-transport-https
-    - ca-certificates
-    - curl
     - software-properties-common
     - docker-ce
-
-- name: Add the docker group
-  group: name=docker gid=998 state=present
+  when: ansible_architecture == "x86_64"
 
 - name: Start Docker
   service: name=docker state=restarted
+  when: ansible_architecture == "x86_64"

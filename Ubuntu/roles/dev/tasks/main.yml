@@ -34,12 +34,15 @@
   package: name='{{ package_names }}' state=present
   when: package_names is defined
 
-- name: Add 16.04 Security repo and git toolsets ubuntu repositories
+- name: Add Security repo and git toolsets ubuntu repositories
   apt_repository: repo='{{ item }}' update_cache=yes
   with_items:
     - ppa:git-core/ppa
     - ppa:brightbox/ruby-ng
-    - ppa:duggan/jo
+
+- name: Add JSon processing repos
+  apt_repository: repo=ppa:duggan/jo update_cache=yes
+  when: ansible_architecture == "x86_64"
 
 - name: Install rump and unikernel dev tooling, was 4.4 now 4.6
   apt: name={{ item }} state=present
@@ -199,8 +202,13 @@
     - xclip
     - xsel
     - jq
-    - jo
     - grc
+
+- name: Install dev tooling
+  apt: name={{ item }} update_cache=yes state=present
+  with_items:
+    - jo
+  when: ansible_architecture == "x86_64"
 
 - name: Add 16.04+ git toolsets ubuntu repositories
   apt_repository: repo='{{ item }}' update_cache=yes
@@ -234,6 +242,8 @@
   with_items:
     - ruby2.5
     - ruby2.5-dev
+  when: ansible_architecture == "x86_64"
 
 - name: Install Travis Bundler
   command: bash -lc "gem install travis -v 1.8.6 --no-rdoc --no-ri"
+  when: ansible_architecture == "x86_64"
