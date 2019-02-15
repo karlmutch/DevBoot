@@ -88,6 +88,17 @@
     copy: no
   when: not goPath.stat.exists
 
+# - name: Install the micro editor, https://github.com/zyedidia/micro, with option --classic
+#  snap:
+#    name: micro
+#    classic: yes
+#
+# - name: Install Go 11
+#   snap:
+#     name: go
+#     classic: yes
+#     channel: 1.11/stable
+
 - sysctl:
     name: kernel.panic
     value: 3
