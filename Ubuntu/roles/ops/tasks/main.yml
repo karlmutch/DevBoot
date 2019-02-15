@@ -82,12 +82,16 @@
     - dfc
     - parallel
     - screenfetch
-    - neofetch
     - sysdig
     - libnotify4
     - gvfs-bin
     - xdg-utils
     - kubectl
+
+# - name: Install the micro editor, https://github.com/zyedidia/micro, with option --classic
+#  snap:
+#    name: micro
+#    classic: yes
 
 - name: Install core tooling for admin and access
   apt: name={{ item }} state=present

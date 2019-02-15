@@ -44,6 +44,13 @@
     - docker-ce
   when: ansible_architecture == "x86_64"
 
+#- name: Install the microk8s Kubernetes distribution
+#  snap:
+#    name: microk8s
+#    classic: yes
+#    channel: "1.12/stable"
+
 - name: Start Docker
   service: name=docker state=restarted
   when: ansible_architecture == "x86_64"
+
