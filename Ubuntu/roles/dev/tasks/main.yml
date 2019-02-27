@@ -55,33 +55,33 @@
 - name: Create user bin directory
   file: path=/home/{{user}}/bin state=directory group={{user}} owner={{user}}
 
-- name: Check if Go 1.11 is installed
+- name: Check if Go 1.11.5 is installed
   shell: go version
   register: go_version
   failed_when: false
   changed_when: false
 
-- name: Download Go 1.11
+- name: Download Go 1.11.5
   get_url:
-      url: https://storage.googleapis.com/golang/go1.11.linux-amd64.tar.gz
-      dest: /tmp/go1.11.linux-amd64.tar.gz
+      url: https://storage.googleapis.com/golang/go1.11.5.linux-amd64.tar.gz
+      dest: /tmp/go1.11.5.linux-amd64.tar.gz
       force: true
-  when: go_version.stdout.find('go version go1.11 linux/amd64') == -1
+  when: go_version.stdout.find('go version go1.11.5 linux/amd64') == -1
 
 - name: Clean artifact path
   file:
     state: absent
     path: "/home/{{user}}/go"
-  when: go_version.stdout.find('go version go1.11 linux/amd64') == -1
+  when: go_version.stdout.find('go version go1.11.5 linux/amd64') == -1
 
 - name: Check for clean go directory
   stat: 
       path: "/home/{{user}}/go"
   register: goPath
 
-- name: Install Go 1.11 locally for user {{user}}
+- name: Install Go 1.11.5 locally for user {{user}}
   unarchive:
-    src: /tmp/go1.11.linux-amd64.tar.gz
+    src: /tmp/go1.11.5.linux-amd64.tar.gz
     dest: "/home/{{user}}"
     group: "{{user}}"
     owner: "{{user}}"
@@ -145,41 +145,41 @@
   command: mv -f /tmp/ripgrep-0.10.0-x86_64-unknown-linux-musl/rg /home/{{user}}/bin/rg
   when: rg_version.stdout.find('ripgrep 0.10.0') == -1
 
-- name: Check if direnv 2.17.0 is installed
+- name: Check if direnv 2.19.2 is installed
   shell: direnv version
   register: direnv_version
   ignore_errors: yes
   failed_when: false
   changed_when: false
 
-- name: Download direnv 2.17.0
+- name: Download direnv 2.19.2
   get_url:
-    url: https://github.com/direnv/direnv/releases/download/v2.17.0/direnv.linux-amd64
+    url: https://github.com/direnv/direnv/releases/download/v2.19.2/direnv.linux-amd64
     dest: /home/{{user}}/bin/direnv
     force: true
-  when: direnv_version.stdout.find('2.17.0') == -1
+  when: direnv_version.stdout.find('2.19.2') == -1
 
 - name: Enable direnv
   file: dest=/home/{{user}}/bin/direnv mode=a+x group={{user}} owner={{user}}
-  when: direnv_version.stdout.find('2.17.0') == -1
+  when: direnv_version.stdout.find('2.19.2') == -1
 
-- name: Check if grv 0.3.0 is installed
+- name: Check if grv 0.3.1 is installed
   shell: grv version
   register: grv_version
   ignore_errors: yes
   failed_when: false
   changed_when: false
 
-- name: Download grv 0.3.0
+- name: Download grv 0.3.1
   get_url:
-    url: https://github.com/rgburke/grv/releases/download/v0.3.0/grv_v0.3.0_linux64
+    url: https://github.com/rgburke/grv/releases/download/v0.3.1/grv_v0.3.1_linux64
     dest: /home/{{user}}/bin/grv
     force: true
-  when: grv_version.stdout.find('0.3.0') == -1
+  when: grv_version.stdout.find('0.3.1') == -1
 
 - name: Enable grv
   file: dest=/home/{{user}}/bin/grv mode=a+x group={{user}} owner={{user}}
-  when: grv_version.stdout.find('0.3.0') == -1
+  when: grv_version.stdout.find('0.3.1') == -1
 
 - name: Install dev tooling
   apt: name={{ item }} update_cache=yes state=present

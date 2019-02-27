@@ -54,3 +54,79 @@
   service: name=docker state=restarted
   when: ansible_architecture == "x86_64"
 
+- name: Check for a version of docui
+  stat: 
+      path: "/home/{{user}}/bin/docui"
+  register: docuiPath
+
+- name: Download docui
+  get_url: 
+    url: https://github.com/skanehira/docui/releases/download/1.0.2/Linux.zip
+    dest: /tmp/docui.zip
+    force: true
+  when: not docuiPath.stat.exists
+
+- name: Unpack docui
+  unarchive:
+    src: /tmp/docui.zip
+    dest: /tmp
+    copy: no
+    creates: "/tmp/docui"
+  when: not docuiPath.stat.exists
+
+- name: Set docui ownership
+  file: dest=/tmp/docui mode=a+x group={{user}} owner={{user}}
+  when: not docuiPath.stat.exists
+
+- name: Install docui to user {{user}} bin
+  command: mv -f /tmp/docui /home/{{user}}/bin/docui
+  when: not docuiPath.stat.exists
+
+- name: Check if kubespy v0.4.0 is installed
+  shell: kubespy version
+  register: kubespy_version
+  failed_when: false
+  changed_when: false
+
+- name: Download kubespy 0.4.0
+  get_url:
+      url: https://github.com/pulumi/kubespy/releases/download/v0.4.0/kubespy-linux-amd64.tar.gz
+      dest: /tmp/kubespy.tar.gz
+      force: true
+  when: kubespy_version.stdout.find('v0.4.0') == -1
+
+- name: Clean kubespy artifact path
+  file:
+    state: absent
+    path: "/tmp/kubespy"
+  when: kubespy_version.stdout.find('v0.4.0') == -1
+
+- name: Create a kubespy unpack directory
+  file:
+      path: /tmp/kubespy
+      state: directory
+      mode: "u=rw,g=wx,o=rwx"
+  when: kubespy_version.stdout.find('v0.4.0') == -1
+
+- name: Extract kubespy v0.4.0
+  unarchive:
+    src: /tmp/kubespy.tar.gz
+    dest: /tmp/kubespy
+    group: "{{user}}"
+    owner: "{{user}}"
+    copy: no
+  when: kubespy_version.stdout.find('v0.4.0') == -1
+
+- name: Set kubespy ownership
+  file: dest=/tmp/kubespy/releases/kubespy-linux-amd64/kubespy mode=a+x group={{user}} owner={{user}}
+  when: kubespy_version.stdout.find('v0.4.0') == -1
+
+- name: Install kubespy to user {{user}} bin
+  command: mv -f /tmp/kubespy/releases/kubespy-linux-amd64/kubespy /home/{{user}}/bin/kubespy
+  when: kubespy_version.stdout.find('v0.4.0') == -1
+
+- name: Clean kubespy artifact path
+  file:
+    state: absent
+    path: "/tmp/kubespy"
+  when: kubespy_version.stdout.find('v0.4.0') == -1
