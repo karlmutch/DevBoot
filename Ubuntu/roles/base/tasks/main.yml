@@ -35,6 +35,7 @@
   with_items:
     - ntp
     - aptitude
+    - lsb-core
 
 - name: Upgrade apt
   apt: upgrade=full
