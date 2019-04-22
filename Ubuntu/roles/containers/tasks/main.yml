@@ -22,8 +22,13 @@
   become: true
   shell: /usr/sbin/update-ca-certificates -f
 
+- name: Load available groups
+  shell: /usr/bin/getent group | awk -F":" '{print $1}'
+  register: etc_groups
+
 - name: Add the docker group
   group: name=docker gid=998 state=present
+  when: '"docker" not in etc_groups.stdout_lines'
 
 # Using apt-key within the ansible python code breaks on Ubuntu 14.04 due to openssl package dependencies breaking
 - name: Add Docker GPG key
@@ -61,7 +66,7 @@
 
 - name: Download docui
   get_url: 
-    url: https://github.com/skanehira/docui/releases/download/1.0.2/Linux.zip
+    url: https://github.com/skanehira/docui/releases/download/1.0.3/Linux.zip
     dest: /tmp/docui.zip
     force: true
   when: not docuiPath.stat.exists

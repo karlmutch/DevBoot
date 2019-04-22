@@ -1,4 +1,5 @@
-karlmutch.com ansible_connection=ssh       ansible_user=kmutch
+#karlmutch.com ansible_connection=ssh       ansible_user=kmutch
+127.0.0.1 ansible_connection=ssh       ansible_user=kmutch
 #localhost ansible_connection=ssh       ansible_user=kmutch
 #35.164.194.5 ansible_connection=ssh        ansible_user=ubuntu ansible_ssh_common_args="-i /home/kmutch/.ssh/toaster.pem"
 #studio-test ansible_connection=ssh       ansible_user=kmutch

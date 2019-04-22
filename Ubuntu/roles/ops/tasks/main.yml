@@ -113,28 +113,28 @@
     - ranger
   when: (ansible_distribution != "Ubuntu") or (ansible_distribution_major_version != "14")
 
-- name: Check if lnav 0.8.4 is installed
+- name: Check if lnav 0.8.5 is installed
   shell: lnav -h
   register: lnav_version
   failed_when: false
   changed_when: false
 
-- name: Download lnav at version 0.8.4
+- name: Download lnav at version 0.8.5
   get_url:
-    url: "https://github.com/tstack/lnav/releases/download/v0.8.4/lnav-0.8.4-linux-64bit.zip"
-    dest: "/tmp/lnav-0.8.4-linux-64bit.zip"
-  when: lnav_version.stdout.find("lnav 0.8.4") == -1 or lnav_version.rc != 0 and ansible_architecture == "x86_64"
+    url: "https://github.com/tstack/lnav/releases/download/v0.8.5/lnav-0.8.5-linux-64bit.zip"
+    dest: "/tmp/lnav-0.8.5-linux-64bit.zip"
+  when: lnav_version.stdout.find("lnav 0.8.5") == -1 or lnav_version.rc != 0 and ansible_architecture == "x86_64"
 
-- name: Extract lnav archive at version 0.8.4
+- name: Extract lnav archive at version 0.8.5
   unarchive: 
-    src: /tmp/lnav-0.8.4-linux-64bit.zip
+    src: /tmp/lnav-0.8.5-linux-64bit.zip
     dest: /tmp 
     copy: no
-  when: lnav_version.stdout.find("lnav 0.8.4") == -1 or lnav_version.rc != 0 and ansible_architecture == "x86_64"
+  when: lnav_version.stdout.find("lnav 0.8.5") == -1 or lnav_version.rc != 0 and ansible_architecture == "x86_64"
 
-- name: Copy extracted lnav 0.8.4 executable to /usr/local/bin
-  command: mv -f /tmp/lnav-0.8.4/lnav /usr/local/bin/lnav
-  when: lnav_version.stdout.find("lnav 0.8.4") == -1 or lnav_version.rc != 0 and ansible_architecture == "x86_64"
+- name: Copy extracted lnav 0.8.5 executable to /usr/local/bin
+  command: mv -f /tmp/lnav-0.8.5/lnav /usr/local/bin/lnav
+  when: lnav_version.stdout.find("lnav 0.8.5") == -1 or lnav_version.rc != 0 and ansible_architecture == "x86_64"
 
 - name: Check if exa 0.8.0 is installed
   shell: exa --version
