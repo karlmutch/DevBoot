@@ -11,16 +11,22 @@
   lineinfile: regexp="^PasswordAuthentication " line="PasswordAuthentication no" dest=/etc/ssh/sshd_config state=present
 
 - name: Install packages that assist with security
-  apt: state=present pkg={{ item }}
-  with_items:
+  apt: 
+    state: present
+    pkg: "{{ items }}"
+  vars:
+    items:
     - ufw
     - fail2ban
     - unattended-upgrades
     - logwatch
 
 - name: Install packages needed to relay email reports
-  apt: state=present pkg={{ item }}
-  with_items:
+  apt: 
+    state: present
+    pkg: "{{ items }}"
+  vars:
+    items:
     - postfix
     - mailutils
     - libsasl2-2

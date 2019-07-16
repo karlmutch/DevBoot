@@ -1,1 +1,4 @@
 package_names: libhttp-parser2.1
+package_repos:
+  - deb [trusted=yes] https://repo.iovisor.org/apt/{{ansible_distribution_release}} {{ansible_distribution_release}}-nightly main
+  - deb http://apt.kubernetes.io/ kubernetes-{{ansible_distribution_release}} main

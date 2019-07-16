@@ -1,7 +1,10 @@
 ---
 - name: Install general certs
-  apt: name={{ item }} state=present
-  with_items:
+  apt: 
+    name: "{{ items }}" 
+    state: present
+  vars:
+    items:
     - curl
     - ca-certificates
     - apt-transport-https
@@ -41,12 +44,15 @@
 
 - name: Install Docker CE and it dependencies
   apt:
-    name: "{{ item }}"
+    name: "{{ items }}"
     state: present
     update_cache: yes
-  with_items:
+  vars:
+    items:
     - software-properties-common
     - docker-ce
+    - docker-ce-cli 
+    - containerd.io
   when: ansible_architecture == "x86_64"
 
 #- name: Install the microk8s Kubernetes distribution

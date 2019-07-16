@@ -42,46 +42,49 @@
 
 - name: Add JSon processing repos
   apt_repository: repo=ppa:duggan/jo update_cache=yes
-  when: ansible_architecture == "x86_64"
+  when: (ansible_architecture == "x86_64") and  (ansible_distribution != "Ubuntu") and (ansible_distribution_major_version != "18")
 
 - name: Install rump and unikernel dev tooling, was 4.4 now 4.6
-  apt: name={{ item }} state=present
-  with_items:
-      - qemu
-      - libxen-dev
-      - libxen-4.6
+  apt: 
+    name: "{{ items }}"
+    state: present
+  vars:
+    items:
+    - qemu
+    - libxen-dev
+    - libxen-4.6
   when: (ansible_distribution != "Ubuntu") and (ansible_distribution_major_version != "14")
 
 - name: Create user bin directory
   file: path=/home/{{user}}/bin state=directory group={{user}} owner={{user}}
 
-- name: Check if Go 1.11.9 is installed
+- name: Check if Go 1.11.12 is installed
   shell: go version
   register: go_version
   failed_when: false
   changed_when: false
 
-- name: Download Go 1.11.9
+- name: Download Go 1.11.12
   get_url:
-      url: https://storage.googleapis.com/golang/go1.11.9.linux-amd64.tar.gz
-      dest: /tmp/go1.11.9.linux-amd64.tar.gz
+      url: https://storage.googleapis.com/golang/go1.11.12.linux-amd64.tar.gz
+      dest: /tmp/go1.11.12.linux-amd64.tar.gz
       force: true
-  when: go_version.stdout.find('go version go1.11.9 linux/amd64') == -1
+  when: go_version.stdout.find('go version go1.11.12 linux/amd64') == -1
 
 - name: Clean artifact path
   file:
     state: absent
     path: "/home/{{user}}/go"
-  when: go_version.stdout.find('go version go1.11.9 linux/amd64') == -1
+  when: go_version.stdout.find('go version go1.11.12 linux/amd64') == -1
 
 - name: Check for clean go directory
   stat: 
       path: "/home/{{user}}/go"
   register: goPath
 
-- name: Install Go 1.11.9 locally for user {{user}}
+- name: Install Go 1.11.12 locally for user {{user}}
   unarchive:
-    src: /tmp/go1.11.9.linux-amd64.tar.gz
+    src: /tmp/go1.11.12.linux-amd64.tar.gz
     dest: "/home/{{user}}"
     group: "{{user}}"
     owner: "{{user}}"
@@ -101,7 +104,7 @@
 
 - sysctl:
     name: kernel.panic
-    value: 3
+    value: '3'
     sysctl_file: /tmp/test_sysctl.conf
     reload: no
 
@@ -115,7 +118,7 @@
     #group: root
     #mode: 0200
 
-- name: Check if RipGrep 0.10.0 is installed
+- name: Check if RipGrep 11.0.1 is installed
   shell: rg --version
   register: rg_version
   ignore_errors: yes
@@ -124,26 +127,26 @@
 
 - name: Download RipGrep
   get_url: 
-    url: https://github.com/BurntSushi/ripgrep/releases/download/11.0.0/ripgrep-11.0.0-x86_64-unknown-linux-musl.tar.gz
-    dest: /tmp/ripgrep-11.0.0-x86_64-unknown-linux-musl.tar.gz
+    url: https://github.com/BurntSushi/ripgrep/releases/download/11.0.1/ripgrep-11.0.1-x86_64-unknown-linux-musl.tar.gz
+    dest: /tmp/ripgrep-11.0.1-x86_64-unknown-linux-musl.tar.gz
     force: true
-  when: rg_version.stdout.find('ripgrep 11.0.0') == -1
+  when: rg_version.stdout.find('ripgrep 11.0.1') == -1
 
 - name: Unpack RipGrep
   unarchive:
-    src: /tmp/ripgrep-11.0.0-x86_64-unknown-linux-musl.tar.gz
+    src: /tmp/ripgrep-11.0.1-x86_64-unknown-linux-musl.tar.gz
     dest: /tmp
     copy: no
-    creates: "/tmp/ripgrep-0.10.0-x86_64-unknown-linux-musl/rg"
-  when: rg_version.stdout.find('ripgrep 11.0.0') == -1
+    creates: "/tmp/ripgrep-11.0.1-x86_64-unknown-linux-musl/rg"
+  when: rg_version.stdout.find('ripgrep 11.0.1') == -1
 
 - name: Set Ripgrep ownership
-  file: dest=/tmp/ripgrep-11.0.0-x86_64-unknown-linux-musl/rg mode=a+x group={{user}} owner={{user}}
-  when: rg_version.stdout.find('ripgrep 11.0.0') == -1
+  file: dest=/tmp/ripgrep-11.0.1-x86_64-unknown-linux-musl/rg mode=a+x group={{user}} owner={{user}}
+  when: rg_version.stdout.find('ripgrep 11.0.1') == -1
 
 - name: Install RipGrep to user {{user}} bin
-  command: mv -f /tmp/ripgrep-11.0.0-x86_64-unknown-linux-musl/rg /home/{{user}}/bin/rg
-  when: rg_version.stdout.find('ripgrep 11.0.0') == -1
+  command: mv -f /tmp/ripgrep-11.0.1-x86_64-unknown-linux-musl/rg /home/{{user}}/bin/rg
+  when: rg_version.stdout.find('ripgrep 11.0.1') == -1
 
 - name: Check if direnv 2.20.0 is installed
   shell: direnv version
@@ -182,8 +185,12 @@
   when: grv_version.stdout.find('0.3.2') == -1
 
 - name: Install dev tooling
-  apt: name={{ item }} update_cache=yes state=present
-  with_items:
+  apt:
+    name: "{{ items }}"
+    update_cache: yes
+    state: present
+  vars:
+    items:
     - git-extras
     - autoconf 
     - automake 
@@ -216,8 +223,12 @@
     - grc
 
 - name: Install dev tooling
-  apt: name={{ item }} update_cache=yes state=present
-  with_items:
+  apt:
+    name: "{{ items }}"
+    update_cache: yes
+    state: present
+  vars:
+    items:
     - jo
   when: ansible_architecture == "x86_64"
 
@@ -228,15 +239,22 @@
   when: (ansible_distribution != "Ubuntu") and (ansible_distribution_major_version != "14")
 
 - name: Install dev packages not supported on Ubuntu 14.04
-  apt: name={{ item }} state=present
-  with_items:
+  apt:
+    name: "{{ items }}"
+    state: present
+  vars:
+    items:
     - lazygit
     - libboost-dev
   when: (ansible_distribution != "Ubuntu") and (ansible_distribution_major_version != "14")
 
 - name: Install thrift development tools for C++
-  apt: name={{ item }} update_cache=yes state=present
-  with_items:
+  apt:
+    name: "{{ items }}"
+    update_cache: yes
+    state: present
+  vars:
+    items:
     - automake
     - bison
     - flex
@@ -247,14 +265,21 @@
     - libtool
     - make
     - pkg-config
+    - zlibc
+    - zlib1g
+    - zlib1g-dev
 
 - name: Install Ruby development tools
-  apt: name={{ item }} update_cache=yes state=present
-  with_items:
-    - ruby2.5
-    - ruby2.5-dev
+  apt: 
+    name: "{{ items }}"
+    update_cache: yes
+    state: present
+  vars:
+    items:
+    - ruby
+    - ruby-dev
   when: ansible_architecture == "x86_64"
 
 - name: Install Travis Bundler
-  command: bash -lc "gem install travis -v 1.8.6 --no-rdoc --no-ri"
+  command: bash -lc "gem install travis --no-rdoc --no-ri"
   when: ansible_architecture == "x86_64"

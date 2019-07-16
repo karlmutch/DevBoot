@@ -50,13 +50,14 @@
   with_items:
     - ppa:pi-rho/dev
     - ppa:neovim-ppa/unstable
-    - deb [trusted=yes] https://repo.iovisor.org/apt/{{ansible_distribution_release}} {{ansible_distribution_release}}-nightly main
-    - deb http://apt.kubernetes.io/ kubernetes-{{ansible_distribution_release}} main
   when: ansible_architecture == "x86_64"
 
 - name: Install core tooling for admin and access
-  apt: name={{ item }} state=present
-  with_items:
+  apt: 
+    name: "{{ items }}"
+    state: present
+  vars:
+    items:
     - xauth
     - rsync
     - most
@@ -89,23 +90,33 @@
     - kubectl
 
 - name: Install core tooling for admin and access
-  apt: name={{ item }} state=present
-  with_items:
+  apt:
+      name: "{{ items }}"
+      state: present
+  vars:
+    items:
     - bcc-tools
     - neovim
   when: ansible_architecture == "x86_64"
 
 
 - name: Install core tooling for admin and access, Ubuntu 14.04 specific
-  apt: name={{ item }} state=present install_recommends=yes
-  with_items:
+  apt:
+    name: "{{ items }}"
+    state: present
+    install_recommends: yes
+  vars:
+    items:
     - python-pip
     - cloud-image-utils
   when: (ansible_distribution == "Ubuntu") and (ansible_distribution_major_version == "14")
 
 - name: Install core tooling for admin and access, Ubuntu 16.01+
-  apt: name={{ item }} state=present
-  with_items:
+  apt:
+    name: "{{ items }}"
+    state: present
+  vars:
+    items:
     - python-pip
     - cloud-image-utils
     - highlight
@@ -136,30 +147,30 @@
   command: mv -f /tmp/lnav-0.8.5/lnav /usr/local/bin/lnav
   when: lnav_version.stdout.find("lnav 0.8.5") == -1 or lnav_version.rc != 0 and ansible_architecture == "x86_64"
 
-- name: Check if exa 0.8.0 is installed
+- name: Check if exa 0.9.0 is installed
   shell: exa --version
   register: exa_version
   failed_when: false
   changed_when: false
 
-- name: Download Rust based exa 0.8.0
+- name: Download Rust based exa 0.9.0
   get_url:
-    url: "https://github.com/ogham/exa/releases/download/v0.8.0/exa-linux-x86_64-0.8.0.zip"
+    url: "https://github.com/ogham/exa/releases/download/v0.9.0/exa-linux-x86_64-0.9.0.zip"
     dest: "/tmp/exa.zip"
     force: yes
-  when: exa_version.stdout.find('exa 0.8.0') == -1 or exa_version.rc != 0 and ansible_architecture == "x86_64"
+  when: exa_version.stdout.find('exa 0.9.0') == -1 or exa_version.rc != 0 and ansible_architecture == "x86_64"
 
-- name: Extract exa version 0.8.0
+- name: Extract exa version 0.9.0
   unarchive: src=/tmp/exa.zip dest=/tmp copy=no creates=/tmp/exa-linux-x86_64
-  when: exa_version.stdout.find('exa 0.8.0') == -1 or exa_version.rc != 0 and ansible_architecture == "x86_64"
+  when: exa_version.stdout.find('exa 0.9.0') == -1 or exa_version.rc != 0 and ansible_architecture == "x86_64"
 
 - name: Copy extracted exa executable to /usr/local/bin
   command: mv /tmp/exa-linux-x86_64 /usr/local/bin/exa
-  when: exa_version.stdout.find('exa 0.8.0') == -1 or exa_version.rc != 0 and ansible_architecture == "x86_64"
+  when: exa_version.stdout.find('exa 0.9.0') == -1 or exa_version.rc != 0 and ansible_architecture == "x86_64"
 
 - name: Make Rust based exa executable
   file: path=/usr/local/bin/exa mode="u+x,g+x,o+x"
-  when: exa_version.stdout.find('exa 0.8.0') == -1 or exa_version.rc != 0 and ansible_architecture == "x86_64"
+  when: exa_version.stdout.find('exa 0.9.0') == -1 or exa_version.rc != 0 and ansible_architecture == "x86_64"
 
 - name: Check if sift 0.9.0 is installed
   shell: sift --version
