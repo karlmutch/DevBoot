@@ -125,7 +125,7 @@
   when: (ansible_distribution != "Ubuntu") or (ansible_distribution_major_version != "14")
 
 - name: Check if lnav 0.8.5 is installed
-  shell: lnav -h
+  shell: lnav -V
   register: lnav_version
   failed_when: false
   changed_when: false
@@ -134,18 +134,18 @@
   get_url:
     url: "https://github.com/tstack/lnav/releases/download/v0.8.5/lnav-0.8.5-linux-64bit.zip"
     dest: "/tmp/lnav-0.8.5-linux-64bit.zip"
-  when: lnav_version.stdout.find("lnav 0.8.5") == -1 or lnav_version.rc != 0 and ansible_architecture == "x86_64"
+  when: ("lnav 0.8.5" not in lnav_version.stdout) and ansible_architecture == "x86_64"
 
 - name: Extract lnav archive at version 0.8.5
   unarchive: 
     src: /tmp/lnav-0.8.5-linux-64bit.zip
     dest: /tmp 
     copy: no
-  when: lnav_version.stdout.find("lnav 0.8.5") == -1 or lnav_version.rc != 0 and ansible_architecture == "x86_64"
+  when: ("lnav 0.8.5" not in lnav_version.stdout) and ansible_architecture == "x86_64"
 
 - name: Copy extracted lnav 0.8.5 executable to /usr/local/bin
   command: mv -f /tmp/lnav-0.8.5/lnav /usr/local/bin/lnav
-  when: lnav_version.stdout.find("lnav 0.8.5") == -1 or lnav_version.rc != 0 and ansible_architecture == "x86_64"
+  when: ("lnav 0.8.5" not in lnav_version.stdout) and ansible_architecture == "x86_64"
 
 - name: Check if exa 0.9.0 is installed
   shell: exa --version
@@ -158,19 +158,19 @@
     url: "https://github.com/ogham/exa/releases/download/v0.9.0/exa-linux-x86_64-0.9.0.zip"
     dest: "/tmp/exa.zip"
     force: yes
-  when: exa_version.stdout.find('exa 0.9.0') == -1 or exa_version.rc != 0 and ansible_architecture == "x86_64"
+  when: ("0.9.0" not in exa_version.stdout) and ansible_architecture == "x86_64"
 
 - name: Extract exa version 0.9.0
   unarchive: src=/tmp/exa.zip dest=/tmp copy=no creates=/tmp/exa-linux-x86_64
-  when: exa_version.stdout.find('exa 0.9.0') == -1 or exa_version.rc != 0 and ansible_architecture == "x86_64"
+  when: ("0.9.0" not in exa_version.stdout) and ansible_architecture == "x86_64"
 
 - name: Copy extracted exa executable to /usr/local/bin
   command: mv /tmp/exa-linux-x86_64 /usr/local/bin/exa
-  when: exa_version.stdout.find('exa 0.9.0') == -1 or exa_version.rc != 0 and ansible_architecture == "x86_64"
+  when: ("0.9.0" not in exa_version.stdout) and ansible_architecture == "x86_64"
 
 - name: Make Rust based exa executable
   file: path=/usr/local/bin/exa mode="u+x,g+x,o+x"
-  when: exa_version.stdout.find('exa 0.9.0') == -1 or exa_version.rc != 0 and ansible_architecture == "x86_64"
+  when: ("0.9.0" not in exa_version.stdout) and ansible_architecture == "x86_64"
 
 - name: Check if sift 0.9.0 is installed
   shell: sift --version
@@ -183,18 +183,18 @@
     url: "https://sift-tool.org/downloads/sift/sift_0.9.0_linux_amd64.tar.gz"
     dest: "/tmp/sift.tar.gz"
     force: true
-  when: sift_version.stdout.find('sift 0.9.0') == -1 or sift_version.rc != 0 and ansible_architecture == "x86_64"
+  when: ("sift 0.9.0" not in sift_version.stdout) and ansible_architecture == "x86_64"
 
 - name: Extract sift version 0.9.0
   unarchive: 
     src: /tmp/sift.tar.gz
     dest: /tmp
     copy: no
-  when: sift_version.stdout.find('sift 0.9.0') == -1 or sift_version.rc != 0 and ansible_architecture == "x86_64"
+  when: ("sift 0.9.0" not in sift_version.stdout) and ansible_architecture == "x86_64"
 
 - name: Copy extracted sift executable to /usr/local/bin
   command: mv -f /tmp/sift_0.9.0_linux_amd64/sift /usr/local/bin/sift
-  when: sift_version.stdout.find('sift 0.9.0') == -1 or sift_version.rc != 0 and ansible_architecture == "x86_64"
+  when: ("sift 0.9.0" not in sift_version.stdout) and ansible_architecture == "x86_64"
 
 #- name: Check if atom is installed
 #  command: dpkg-query -W atom
@@ -213,3 +213,18 @@
 #  become: true
 #  when: atom_check_deb.rc == 1
 
+- name: Check if kops is installed
+  shell: kops version
+  register: kops_version
+  failed_when: false
+  changed_when: false
+
+- name: Download kops 1.12.2
+  get_url: 
+    url: "https://github.com/kubernetes/kops/releases/download/1.12.2/kops-linux-amd64"
+    dest: /usr/local/bin/kops
+    owner: root
+    group: root
+    mode: 0755
+    force: yes
+  when: ("Version 1.12.2" not in kops_version.stdout) and ansible_architecture == "x86_64"

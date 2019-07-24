@@ -1,5 +1,5 @@
 - name: Change sudo group to not need passwords
-  lineinfile: dest=/etc/sudoers state=present regexp="^Defaults\s+env_reset" line="Defaults\texempt_group=sudo"
+  lineinfile: dest=/etc/sudoers state=present line="Defaults\texempt_group=sudo"
 
 - name: Set DNS checking to off
   lineinfile: line="UseDNS no" dest=/etc/ssh/sshd_config state=present
