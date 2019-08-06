@@ -55,8 +55,8 @@
     - libxen-4.6
   when: (ansible_distribution != "Ubuntu") and (ansible_distribution_major_version != "14")
 
-- name: Create user bin directory
-  file: path=/home/{{user}}/bin state=directory group={{user}} owner={{user}}
+- name: Create user ~/.local/bin directory
+  file: path=/home/{{user}}/.local/bin state=directory group={{user}} owner={{user}}
 
 - name: Check if Go 1.11.12 is installed
   shell: /home/{{user}}/go/bin/go version
@@ -119,7 +119,7 @@
     #mode: 0200
 
 - name: Check if RipGrep 11.0.1 is installed
-  shell: /home/{{user}}/bin/rg -V
+  shell: /home/{{user}}/.local/bin/rg -V
   register: rg_version
   failed_when: false
   changed_when: false
@@ -143,12 +143,12 @@
   file: dest=/tmp/ripgrep-11.0.1-x86_64-unknown-linux-musl/rg mode=a+x group={{user}} owner={{user}}
   when: ("ripgrep 11.0.1" not in rg_version.stdout)
 
-- name: Install RipGrep to user {{user}} bin
-  command: mv -f /tmp/ripgrep-11.0.1-x86_64-unknown-linux-musl/rg /home/{{user}}/bin/rg
+- name: Install RipGrep to user {{user}} ~/.local/bin
+  command: mv -f /tmp/ripgrep-11.0.1-x86_64-unknown-linux-musl/rg /home/{{user}}/.local/bin/rg
   when: ("ripgrep 11.0.1" not in rg_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Check if direnv 2.20.0 is installed
-  shell: /home/{{user}}/bin/direnv version
+  shell: /home/{{user}}/.local/bin/direnv version
   register: direnv_version
   failed_when: false
   changed_when: false
@@ -156,16 +156,16 @@
 - name: Download direnv 2.20.0
   get_url:
     url: https://github.com/direnv/direnv/releases/download/v2.20.0/direnv.linux-amd64
-    dest: /home/{{user}}/bin/direnv
+    dest: /home/{{user}}/.local/bin/direnv
     force: true
   when: ("2.20.0" not in direnv_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Enable direnv
-  file: dest=/home/{{user}}/bin/direnv mode=a+x group={{user}} owner={{user}}
+  file: dest=/home/{{user}}/.local/bin/direnv mode=a+x group={{user}} owner={{user}}
   when: ("2.20.0" not in direnv_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Check if grv 0.3.2 is installed
-  shell: /home/{{user}}/bin/grv -version
+  shell: /home/{{user}}/.local/bin/grv -version
   register: grv_version
   failed_when: false
   changed_when: false
@@ -173,13 +173,42 @@
 - name: Download grv 0.3.2
   get_url:
     url: https://github.com/rgburke/grv/releases/download/v0.3.2/grv_v0.3.2_linux64
-    dest: /home/{{user}}/bin/grv
+    dest: /home/{{user}}/.local/bin/grv
     force: true
   when: ("0.3.2" not in grv_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Enable grv
-  file: dest=/home/{{user}}/bin/grv mode=a+x group={{user}} owner={{user}}
+  file: dest=/home/{{user}}/.local/bin/grv mode=a+x group={{user}} owner={{user}}
   when: ("0.3.2" not in grv_version.stdout) and (ansible_architecture == "x86_64")
+
+- name: Check if golangci-lint 1.17.1 is installed
+  shell: /home/{{user}}/.local/bin/golangci-lint -version
+  register: golangci_lint_version
+  failed_when: false
+  changed_when: false
+
+- name: Download golangci-lint 1.17.1
+  get_url:
+    url: https://github.com/golangci/golangci-lint/releases/download/v1.17.1/golangci-lint-1.17.1-linux-amd64.tar.gz
+    dest: /tmp/golangci-lint-linux-amd64.tar.gz
+    force: true
+  when: ("1.17.1" not in golangci_lint_version.stdout) and (ansible_architecture == "x86_64")
+
+- name: Unpack golangci-lint
+  unarchive:
+    src: /tmp/golangci-lint-linux-amd64.tar.gz
+    dest: /tmp
+    copy: no
+    creates: "/tmp/golangci-lint-1.17.1-linux-amd64/golangci-lint"
+  when: ("1.17.1" not in golangci_lint_version.stdout) and (ansible_architecture == "x86_64")
+
+- name: Set Ripgrep ownership
+  file: dest=/tmp/golangci-lint-1.17.1-linux-amd64/golangci-lint mode=a+x group={{user}} owner={{user}}
+  when: ("1.17.1" not in golangci_lint_version.stdout) and (ansible_architecture == "x86_64")
+
+- name: Install RipGrep to user {{user}} ~/.local/bin
+  command: mv -f /tmp/golangci-lint-1.17.1-linux-amd64/golangci-lint /home/{{user}}/.local/bin/golangci-lint
+  when: ("1.17.1" not in golangci_lint_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Install dev tooling
   apt:

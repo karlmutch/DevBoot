@@ -67,7 +67,7 @@
 
 - name: Check for a version of docui
   stat: 
-      path: "/home/{{user}}/bin/docui"
+      path: "/home/{{user}}/.local/bin/docui"
   register: docuiPath
 
 - name: Download docui
@@ -89,12 +89,12 @@
   file: dest=/tmp/docui mode=a+x group={{user}} owner={{user}}
   when: not docuiPath.stat.exists
 
-- name: Install docui to user {{user}} bin
-  command: mv -f /tmp/docui /home/{{user}}/bin/docui
+- name: Install docui to user {{user}} ~/.local/bin
+  command: mv -f /tmp/docui /home/{{user}}/.local/bin/docui
   when: not docuiPath.stat.exists
 
 - name: Check if kubespy v0.4.0 is installed
-  shell: /home/{{user}}/bin/kubespy version
+  shell: /home/{{user}}/.local/bin/kubespy version
   register: kubespy_version
   failed_when: false
   changed_when: false
@@ -132,8 +132,8 @@
   file: dest=/tmp/kubespy/releases/kubespy-linux-amd64/kubespy mode=a+x group={{user}} owner={{user}}
   when: ("v0.4.0" not in kubespy_version.stdout) and (ansible_architecture == "x86_64")
 
-- name: Install kubespy to user {{user}} bin
-  command: mv -f /tmp/kubespy/releases/kubespy-linux-amd64/kubespy /home/{{user}}/bin/kubespy
+- name: Install kubespy to user {{user}} ~/.local/bin
+  command: mv -f /tmp/kubespy/releases/kubespy-linux-amd64/kubespy /home/{{user}}/.local/bin/kubespy
   when: ("v0.4.0" not in kubespy_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Clean kubespy artifact path
