@@ -304,7 +304,3 @@
     - ruby
     - ruby-dev
   when: ansible_architecture == "x86_64"
-
-- name: Install Travis Bundler
-  command: bash -lc "gem install travis --no-rdoc --no-ri"
-  when: ansible_architecture == "x86_64"
