@@ -58,38 +58,38 @@
 - name: Create user ~/.local/bin directory
   file: path=/home/{{user}}/.local/bin state=directory group={{user}} owner={{user}}
 
-- name: Check if Go 1.11.12 is installed
+- name: Check if Go 1.11.13 is installed
   shell: /home/{{user}}/go/bin/go version
   register: go_version
   failed_when: false
   changed_when: false
 
-- name: Download Go 1.11.12
+- name: Download Go 1.11.13
   get_url:
-      url: https://storage.googleapis.com/golang/go1.11.12.linux-amd64.tar.gz
-      dest: /tmp/go1.11.12.linux-amd64.tar.gz
+      url: https://storage.googleapis.com/golang/go1.11.13.linux-amd64.tar.gz
+      dest: /tmp/go1.11.13.linux-amd64.tar.gz
       force: true
-  when: ("go1.11.12" not in go_version.stdout) and (ansible_architecture == "x86_64")
+  when: ("go1.11.13" not in go_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Clean artifact path
   file:
     state: absent
     path: "/home/{{user}}/go"
-  when: ("go1.11.12" not in go_version.stdout) and (ansible_architecture == "x86_64")
+  when: ("go1.11.13" not in go_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Check for clean go directory
   stat: 
       path: "/home/{{user}}/go"
   register: goPath
 
-- name: Install Go 1.11.12 locally for user {{user}}
+- name: Install Go 1.11.13 locally for user {{user}}
   unarchive:
-    src: /tmp/go1.11.12.linux-amd64.tar.gz
+    src: /tmp/go1.11.13.linux-amd64.tar.gz
     dest: "/home/{{user}}"
     group: "{{user}}"
     owner: "{{user}}"
     copy: no
-  when: not goPath.stat.exists and ("go1.11.12" not in go_version.stdout) and (ansible_architecture == "x86_64")
+  when: not goPath.stat.exists and ("go1.11.13" not in go_version.stdout) and (ansible_architecture == "x86_64")
 
 # - name: Install the micro editor, https://github.com/zyedidia/micro, with option --classic
 #  snap:
@@ -118,7 +118,7 @@
     #group: root
     #mode: 0200
 
-- name: Check if RipGrep 11.0.1 is installed
+- name: Check if RipGrep 11.0.2 is installed
   shell: /home/{{user}}/.local/bin/rg -V
   register: rg_version
   failed_when: false
@@ -126,26 +126,26 @@
 
 - name: Download RipGrep
   get_url: 
-    url: https://github.com/BurntSushi/ripgrep/releases/download/11.0.1/ripgrep-11.0.1-x86_64-unknown-linux-musl.tar.gz
-    dest: /tmp/ripgrep-11.0.1-x86_64-unknown-linux-musl.tar.gz
+    url: https://github.com/BurntSushi/ripgrep/releases/download/11.0.2/ripgrep-11.0.2-x86_64-unknown-linux-musl.tar.gz
+    dest: /tmp/ripgrep-11.0.2-x86_64-unknown-linux-musl.tar.gz
     force: true
-  when: ("ripgrep 11.0.1" not in rg_version.stdout) and (ansible_architecture == "x86_64")
+  when: ("ripgrep 11.0.2" not in rg_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Unpack RipGrep
   unarchive:
-    src: /tmp/ripgrep-11.0.1-x86_64-unknown-linux-musl.tar.gz
+    src: /tmp/ripgrep-11.0.2-x86_64-unknown-linux-musl.tar.gz
     dest: /tmp
     copy: no
-    creates: "/tmp/ripgrep-11.0.1-x86_64-unknown-linux-musl/rg"
-  when: ("ripgrep 11.0.1" not in rg_version.stdout) and (ansible_architecture == "x86_64")
+    creates: "/tmp/ripgrep-11.0.2-x86_64-unknown-linux-musl/rg"
+  when: ("ripgrep 11.0.2" not in rg_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Set Ripgrep ownership
-  file: dest=/tmp/ripgrep-11.0.1-x86_64-unknown-linux-musl/rg mode=a+x group={{user}} owner={{user}}
-  when: ("ripgrep 11.0.1" not in rg_version.stdout)
+  file: dest=/tmp/ripgrep-11.0.2-x86_64-unknown-linux-musl/rg mode=a+x group={{user}} owner={{user}}
+  when: ("ripgrep 11.0.2" not in rg_version.stdout)
 
 - name: Install RipGrep to user {{user}} ~/.local/bin
-  command: mv -f /tmp/ripgrep-11.0.1-x86_64-unknown-linux-musl/rg /home/{{user}}/.local/bin/rg
-  when: ("ripgrep 11.0.1" not in rg_version.stdout) and (ansible_architecture == "x86_64")
+  command: mv -f /tmp/ripgrep-11.0.2-x86_64-unknown-linux-musl/rg /home/{{user}}/.local/bin/rg
+  when: ("ripgrep 11.0.2" not in rg_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Check if direnv 2.20.0 is installed
   shell: /home/{{user}}/.local/bin/direnv version
@@ -187,28 +187,28 @@
   failed_when: false
   changed_when: false
 
-- name: Download golangci-lint 1.17.1
+- name: Download golangci-lint 1.18.0
   get_url:
-    url: https://github.com/golangci/golangci-lint/releases/download/v1.17.1/golangci-lint-1.17.1-linux-amd64.tar.gz
+    url: https://github.com/golangci/golangci-lint/releases/download/v1.18.0/golangci-lint-1.18.0-linux-amd64.tar.gz
     dest: /tmp/golangci-lint-linux-amd64.tar.gz
     force: true
-  when: ("1.17.1" not in golangci_lint_version.stdout) and (ansible_architecture == "x86_64")
+  when: ("1.18.0" not in golangci_lint_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Unpack golangci-lint
   unarchive:
     src: /tmp/golangci-lint-linux-amd64.tar.gz
     dest: /tmp
     copy: no
-    creates: "/tmp/golangci-lint-1.17.1-linux-amd64/golangci-lint"
-  when: ("1.17.1" not in golangci_lint_version.stdout) and (ansible_architecture == "x86_64")
+    creates: "/tmp/golangci-lint-1.18.0-linux-amd64/golangci-lint"
+  when: ("1.18.0" not in golangci_lint_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Set Ripgrep ownership
-  file: dest=/tmp/golangci-lint-1.17.1-linux-amd64/golangci-lint mode=a+x group={{user}} owner={{user}}
-  when: ("1.17.1" not in golangci_lint_version.stdout) and (ansible_architecture == "x86_64")
+  file: dest=/tmp/golangci-lint-1.18.0-linux-amd64/golangci-lint mode=a+x group={{user}} owner={{user}}
+  when: ("1.18.0" not in golangci_lint_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Install RipGrep to user {{user}} ~/.local/bin
-  command: mv -f /tmp/golangci-lint-1.17.1-linux-amd64/golangci-lint /home/{{user}}/.local/bin/golangci-lint
-  when: ("1.17.1" not in golangci_lint_version.stdout) and (ansible_architecture == "x86_64")
+  command: mv -f /tmp/golangci-lint-1.18.0-linux-amd64/golangci-lint /home/{{user}}/.local/bin/golangci-lint
+  when: ("1.18.0" not in golangci_lint_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Install dev tooling
   apt:

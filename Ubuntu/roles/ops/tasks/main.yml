@@ -1,5 +1,4 @@
 ---
-
 - name: read vars
   include_vars: '{{ item }}'
   with_first_found:
@@ -213,18 +212,36 @@
 #  become: true
 #  when: atom_check_deb.rc == 1
 
-- name: Check if kops is installed
+- name: Check if kops 1.13.0 is installed
   shell: kops version
   register: kops_version
   failed_when: false
   changed_when: false
 
-- name: Download kops 1.12.2
+- name: Download kops 1.13.0
   get_url: 
-    url: "https://github.com/kubernetes/kops/releases/download/1.12.2/kops-linux-amd64"
+    url: "https://github.com/kubernetes/kops/releases/download/1.13.0/kops-linux-amd64"
+
     dest: /usr/local/bin/kops
     owner: root
     group: root
     mode: 0755
     force: yes
-  when: ("Version 1.12.2" not in kops_version.stdout) and ansible_architecture == "x86_64"
+  when: ("Version 1.13.0 " not in kops_version.stdout) and ansible_architecture == "x86_64"
+
+- name: Check if kustomize 3.1.0 is installed
+  shell: kustomize version
+  register: kustomize_version
+  failed_when: false
+  changed_when: false
+
+- name: Download kustomize 3.1.0
+  get_url: 
+    url: "https://github.com/kubernetes-sigs/kustomize/releases/download/v3.1.0/kustomize_3.1.0_linux_amd64"
+
+    dest: /usr/local/bin/kustomize
+    owner: root
+    group: root
+    mode: 0755
+    force: yes
+  when: ("Version 3.1.0 " not in kustomize_version.stdout) and ansible_architecture == "x86_64"
