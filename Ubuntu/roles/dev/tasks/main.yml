@@ -181,34 +181,34 @@
   file: dest=/home/{{user}}/.local/bin/grv mode=a+x group={{user}} owner={{user}}
   when: ("0.3.2" not in grv_version.stdout) and (ansible_architecture == "x86_64")
 
-- name: Check if golangci-lint 1.17.1 is installed
+- name: Check if golangci-lint 1.21.0 is installed
   shell: /home/{{user}}/.local/bin/golangci-lint -version
   register: golangci_lint_version
   failed_when: false
   changed_when: false
 
-- name: Download golangci-lint 1.18.0
+- name: Download golangci-lint 1.21.0
   get_url:
-    url: https://github.com/golangci/golangci-lint/releases/download/v1.18.0/golangci-lint-1.18.0-linux-amd64.tar.gz
+    url: https://github.com/golangci/golangci-lint/releases/download/v1.21.0/golangci-lint-1.21.0-linux-amd64.tar.gz
     dest: /tmp/golangci-lint-linux-amd64.tar.gz
     force: true
-  when: ("1.18.0" not in golangci_lint_version.stdout) and (ansible_architecture == "x86_64")
+  when: ("1.21.0" not in golangci_lint_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Unpack golangci-lint
   unarchive:
     src: /tmp/golangci-lint-linux-amd64.tar.gz
     dest: /tmp
     copy: no
-    creates: "/tmp/golangci-lint-1.18.0-linux-amd64/golangci-lint"
-  when: ("1.18.0" not in golangci_lint_version.stdout) and (ansible_architecture == "x86_64")
+    creates: "/tmp/golangci-lint-1.21.0-linux-amd64/golangci-lint"
+  when: ("1.21.0" not in golangci_lint_version.stdout) and (ansible_architecture == "x86_64")
 
-- name: Set Ripgrep ownership
-  file: dest=/tmp/golangci-lint-1.18.0-linux-amd64/golangci-lint mode=a+x group={{user}} owner={{user}}
-  when: ("1.18.0" not in golangci_lint_version.stdout) and (ansible_architecture == "x86_64")
+- name: Set golangci-lint ownership
+  file: dest=/tmp/golangci-lint-1.21.0-linux-amd64/golangci-lint mode=a+x group={{user}} owner={{user}}
+  when: ("1.21.0" not in golangci_lint_version.stdout) and (ansible_architecture == "x86_64")
 
-- name: Install RipGrep to user {{user}} ~/.local/bin
-  command: mv -f /tmp/golangci-lint-1.18.0-linux-amd64/golangci-lint /home/{{user}}/.local/bin/golangci-lint
-  when: ("1.18.0" not in golangci_lint_version.stdout) and (ansible_architecture == "x86_64")
+- name: Install golangci-lint to user {{user}} ~/.local/bin
+  command: mv -f /tmp/golangci-lint-1.21.0-linux-amd64/golangci-lint /home/{{user}}/.local/bin/golangci-lint
+  when: ("1.21.0" not in golangci_lint_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Install dev tooling
   apt:

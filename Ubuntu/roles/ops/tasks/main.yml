@@ -212,36 +212,94 @@
 #  become: true
 #  when: atom_check_deb.rc == 1
 
-- name: Check if kops 1.13.0 is installed
+- name: Check if kops 1.15.0 is installed
   shell: kops version
   register: kops_version
   failed_when: false
   changed_when: false
 
-- name: Download kops 1.13.0
+- name: Download kops 1.15.0
   get_url: 
-    url: "https://github.com/kubernetes/kops/releases/download/1.13.0/kops-linux-amd64"
+    url: "https://github.com/kubernetes/kops/releases/download/1.15.0/kops-linux-amd64"
 
     dest: /usr/local/bin/kops
     owner: root
     group: root
     mode: 0755
     force: yes
-  when: ("Version 1.13.0 " not in kops_version.stdout) and ansible_architecture == "x86_64"
+  when: ("Version 1.15.0 " not in kops_version.stdout) and ansible_architecture == "x86_64"
 
-- name: Check if kustomize 3.1.0 is installed
+- name: Check if kustomize 3.5.3 is installed
   shell: kustomize version
   register: kustomize_version
   failed_when: false
   changed_when: false
 
-- name: Download kustomize 3.1.0
+- name: Download kustomize 3.5.3
   get_url: 
-    url: "https://github.com/kubernetes-sigs/kustomize/releases/download/v3.1.0/kustomize_3.1.0_linux_amd64"
-
-    dest: /usr/local/bin/kustomize
-    owner: root
-    group: root
-    mode: 0755
+    url: "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv3.5.3/kustomize_v3.5.3_linux_amd64.tar.gz"
+    dest: /tmp/kustomize.tar.gz
     force: yes
-  when: ("Version 3.1.0 " not in kustomize_version.stdout) and ansible_architecture == "x86_64"
+  when: ("Version 3.5.3 " not in kustomize_version.stdout) and ansible_architecture == "x86_64"
+
+- name: Extract kustomize version 3.5.3
+  unarchive: src=/tmp/kustomize.tar.gz dest=/tmp copy=no creates=/tmp/kustomize
+  when: ("Version 3.5.3 " not in kustomize_version.stdout) and ansible_architecture == "x86_64"
+
+- name: Copy extracted kustomize executable to /usr/local/bin
+  command: mv /tmp/kustomize /usr/local/bin/kustomize
+  when: ("Version 3.5.3 " not in kustomize_version.stdout) and ansible_architecture == "x86_64"
+
+- name: Make kustomize executable
+  file: path=/usr/local/bin/kustomize mode="u+x,g+x,o+x"
+  when: ("Version 3.5.3 " not in kustomize_version.stdout) and ansible_architecture == "x86_64"
+
+- name: Check if krew is installed
+  shell: kubectl krew version
+  register: krew_version
+  failed_when: false
+  changed_when: false
+
+- name: create temporary krew install directory
+  tempfile:
+    state: directory
+    suffix: krew_installer
+  register: krew_temp
+
+- name: Download krew 0.3.3
+  shell: 
+    cmd: curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/download/v0.3.3/krew.{tar.gz,yaml}"
+    chdir: "{{ krew_temp.path }}"
+    warn: false
+  when: ("Version 0.3.3 " not in krew_version.stdout) and ansible_architecture == "x86_64"
+
+- name: Extract krew version 0.3.3
+  unarchive: src={{ krew_temp.path }}/krew.tar.gz dest={{ krew_temp.path }} copy=no
+  when: ("Version 0.3.3 " not in kustomize_version.stdout) and ansible_architecture == "x86_64"
+
+- name: Obtain OS exec name
+  shell: uname | tr '[:upper:]' '[:lower:]'
+  register: shell_result
+
+- name: Debug OS exec name
+  debug:
+   var: krew_temp
+
+- name: Install krew 0.3.3 from tar archive
+  shell:
+    cmd: ./krew-{{ shell_result.stdout }}_amd64 install --manifest=krew.yaml --archive=krew.tar.gz
+    chdir: "{{ krew_temp.path }}"
+  when: ("Version 0.3.3 " not in krew_version.stdout) and ansible_architecture == "x86_64"
+
+- name: Update from krew 0.3.3 
+  shell:
+    cmd: ./krew-{{ shell_result.stdout }}_amd64 update
+    chdir: "{{ krew_temp.path }}"
+  when: ("Version 0.3.3 " not in krew_version.stdout) and ansible_architecture == "x86_64"
+#
+#- name: Remove the temporary krew directory
+#  file:
+#    path: "{{ krew_temp.path }}"
+#    state: absent
+#  when: krew_temp.path is defined
+#
