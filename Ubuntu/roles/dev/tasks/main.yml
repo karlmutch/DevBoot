@@ -257,6 +257,22 @@
     - jo
   when: ansible_architecture == "x86_64"
 
+- name: set Tekton keys from the public Ubuntu keyserver
+  apt_key: keyserver=keyserver.ubuntu.com id=A40E52296E4CF9F90DD1E3BB3EFE0E0A2F2F60AA
+
+- name: Add tekton CLI ubuntu repository
+  apt_repository: repo='{{ item }}' update_cache=yes
+  with_items:
+    - 'deb http://ppa.launchpad.net/tektoncd/cli/ubuntu eoan main'
+
+- name: Install tekton cli package
+  apt:
+    name: "{{ items }}"
+    state: present
+  vars:
+    items:
+    - tektoncd-cli
+
 - name: Add 16.04+ git toolsets ubuntu repositories
   apt_repository: repo='{{ item }}' update_cache=yes
   with_items:
