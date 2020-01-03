@@ -263,7 +263,7 @@
 - name: create temporary krew install directory
   tempfile:
     state: directory
-    suffix: krew_installer
+    suffix: _krew_installer
   register: krew_temp
 
 - name: Download krew 0.3.3
@@ -281,10 +281,6 @@
   shell: uname | tr '[:upper:]' '[:lower:]'
   register: shell_result
 
-- name: Debug OS exec name
-  debug:
-   var: krew_temp
-
 - name: Install krew 0.3.3 from tar archive
   shell:
     cmd: ./krew-{{ shell_result.stdout }}_amd64 install --manifest=krew.yaml --archive=krew.tar.gz
@@ -296,10 +292,9 @@
     cmd: ./krew-{{ shell_result.stdout }}_amd64 update
     chdir: "{{ krew_temp.path }}"
   when: ("Version 0.3.3 " not in krew_version.stdout) and ansible_architecture == "x86_64"
-#
-#- name: Remove the temporary krew directory
-#  file:
-#    path: "{{ krew_temp.path }}"
-#    state: absent
-#  when: krew_temp.path is defined
-#
+
+- name: Remove the temporary krew directory
+  file:
+    path: "{{ krew_temp.path }}"
+    state: absent
+  when: krew_temp.path is defined

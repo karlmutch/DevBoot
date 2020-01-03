@@ -247,7 +247,7 @@
     - jq
     - grc
 
-- name: Install dev tooling
+- name: Install x86 specific dev tooling
   apt:
     name: "{{ items }}"
     update_cache: yes
@@ -272,6 +272,35 @@
   vars:
     items:
     - tektoncd-cli
+
+- name: Enable Tekton as a kubectl plugin
+  file:
+    src: /usr/bin/tkn
+    dest: /usr/bin/kubectl-tkn
+    owner: root
+    group: root
+    state: link
+
+- name: create temporary Jenkins X install directory
+  tempfile:
+    state: directory
+    suffix: _jenkinsx_installer
+  register: jenkinsx_temp
+
+- name: Install Jenkins X CLI
+  shell:
+    cmd: curl -L "https://github.com/jenkins-x/jx/releases/download/$(curl --silent https://github.com/jenkins-x/jx/releases/latest | sed 's#.*tag/\(.*\)\".*#\1#')/jx-linux-amd64.tar.gz" | tar xzv "jx"
+    chdir: "{{ jenkinsx_temp.path }}"
+    warn: false
+
+- name: Move extracted JenkinsX executable to /usr/local/bin
+  command: mv {{ jenkinsx_temp.path }}/jx /usr/local/bin/jx
+
+- name: Remove the temporary jenkinsx directory
+  file:
+    path: "{{ jenkinsx_temp.path }}"
+    state: absent
+  when: jenkinsx_temp.path is defined
 
 - name: Add 16.04+ git toolsets ubuntu repositories
   apt_repository: repo='{{ item }}' update_cache=yes
