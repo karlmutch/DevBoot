@@ -51,12 +51,37 @@
     - ppa:neovim-ppa/unstable
   when: ansible_architecture == "x86_64"
 
+- name: Add development tool sets ubuntu repositories
+  apt_repository: repo='{{ item }}' update_cache=yes
+  with_items:
+    - ppa:pi-rho/dev
+    - ppa:neovim-ppa/unstable
+  when: ansible_architecture == "x86_64"
+
+- name: Tailscale signing key
+  become: yes
+  apt_key:
+    url: "https://pkgs.tailscale.com/stable/{{ ansible_distribution | lower }}/{{ ansible_distribution_release | lower }}.gpg"
+    state: present
+
+- name: Add Tailscale deb
+  become: yes
+  apt_repository:
+    repo: "deb https://pkgs.tailscale.com/stable/{{ ansible_distribution | lower }} {{ ansible_distribution_release | lower }} main"
+    state: present
+
 - name: Install core tooling for admin and access
   apt: 
     name: "{{ items }}"
     state: present
+    update_cache: true
   vars:
     items:
+    - gnupg2
+    - gnupg-agent
+    - apt-transport-https
+    - python-apt
+    - python3-apt
     - xauth
     - rsync
     - most
@@ -87,6 +112,7 @@
     - gvfs-bin
     - xdg-utils
     - kubectl
+    - tailscale
 
 - name: Install core tooling for admin and access
   apt:
@@ -121,7 +147,7 @@
     - highlight
     - lolcat
     - ranger
-  when: (ansible_distribution != "Ubuntu") or (ansible_distribution_major_version != "14")
+  when: (ansible_distribution == "Ubuntu") and (ansible_distribution_major_version == "16")
 
 - name: Check if lnav 0.8.5 is installed
   shell: lnav -V
@@ -256,6 +282,10 @@
 
 - name: Check if krew is installed
   shell: kubectl krew version
+  environment:
+      PATH: '{{ ansible_env.PATH }}:/home/{{ ansible_env.SUDO_USER }}/.krew/bin'
+  become: true
+  become_user: '{{ ansible_env.SUDO_USER }}'
   register: krew_version
   failed_when: false
   changed_when: false
@@ -265,59 +295,81 @@
     state: directory
     suffix: _krew_installer
   register: krew_temp
-  when: ("unknown command" in krew_version.stdout) and ansible_architecture == "x86_64"
+  when: ("unknown command" in krew_version.stderr) and ansible_architecture == "x86_64"
 
 - name: Download krew 0.3.4
   shell: 
     cmd: curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/download/v0.3.4/krew.{tar.gz,yaml}"
     chdir: "{{ krew_temp.path }}"
     warn: false
-  when: krew_temp.path is defined
+  when: ("unknown command" in krew_version.stderr) and ansible_architecture == "x86_64"
 
 - name: Extract krew installer
   unarchive: src={{ krew_temp.path }}/krew.tar.gz dest={{ krew_temp.path }} copy=no
-  when: krew_temp.path is defined
+  when: ("unknown command" in krew_version.stderr) and ansible_architecture == "x86_64"
 
 - name: Obtain OS exec name
   shell: uname | tr '[:upper:]' '[:lower:]'
   register: shell_result
-  when: krew_temp.path is defined
+  when: ("unknown command" in krew_version.stderr) and ansible_architecture == "x86_64"
 
 - name: Install krew 0.3.4 from tar archive
   shell:
     cmd: ./krew-{{ shell_result.stdout }}_amd64 install --manifest=krew.yaml --archive=krew.tar.gz
     chdir: "{{ krew_temp.path }}"
-  when: krew_temp.path is defined
+  become: true
+  become_user: '{{ ansible_env.SUDO_USER }}'
+  when: ("unknown command" in krew_version.stderr) and ansible_architecture == "x86_64"
 
 - name: Update krew index using installer
   shell:
     cmd: ./krew-{{ shell_result.stdout }}_amd64 update
     chdir: "{{ krew_temp.path }}"
-  when: krew_temp.path is defined
+  become: true
+  become_user: '{{ ansible_env.SUDO_USER }}'
+  when: ("unknown command" in krew_version.stderr) and ansible_architecture == "x86_64"
 
 - name: Remove the temporary krew directory
   file:
     path: "{{ krew_temp.path }}"
     state: absent
-  when: krew_temp.path is defined
+  when: ("unknown command" in krew_version.stderr) and ansible_architecture == "x86_64"
 
 - name: Check krew version installed
   command: kubectl krew version
   environment:
-      PATH: '{{ ansible_env.PATH }}:{{ ansible_env.HOME }}/.krew/bin'
+      PATH: '{{ ansible_env.PATH }}:/home/{{ ansible_env.SUDO_USER }}/.krew/bin'
+  become: true
+  become_user: '{{ ansible_env.SUDO_USER }}'
   register: krew_version
   failed_when: false
   changed_when: false
 
+- name: Update krew receipts index
+  command: kubectl krew system receipts-upgrade
+  environment:
+      PATH: '{{ ansible_env.PATH }}:/home/{{ ansible_env.SUDO_USER }}/.krew/bin'
+  become: true
+  become_user: '{{ ansible_env.SUDO_USER }}'
+  when: ("v0.3.4" not in krew_version.stdout) and ansible_architecture == "x86_64"
+
 - name: Update krew index
   command: kubectl krew update
   environment:
-      PATH: '{{ ansible_env.PATH }}:{{ ansible_env.HOME }}/.krew/bin'
+      PATH: '{{ ansible_env.PATH }}:/home/{{ ansible_env.SUDO_USER }}/.krew/bin'
+  become: true
+  become_user: '{{ ansible_env.SUDO_USER }}'
   when: ("v0.3.4" not in krew_version.stdout) and ansible_architecture == "x86_64"
 
 - name: Upgrade krew plugin
-  command: kubectl krew upgrade krew
+  shell: kubectl krew upgrade krew
   environment:
-      PATH: '{{ ansible_env.PATH }}:{{ ansible_env.HOME }}/.krew/bin'
+      PATH: '{{ ansible_env.PATH }}:/home/{{ ansible_env.SUDO_USER }}/.krew/bin'
+  become: true
+  become_user: '{{ ansible_env.SUDO_USER }}'
+  register: upgrade_krew
+  ignore_errors: yes
   when: ("v0.3.4" not in krew_version.stdout) and ansible_architecture == "x86_64"
 
+- fail: msg="{{ upgrade_krew }}"
+  when: ('the newest version is already installed' not in upgrade_krew) and ("v0.3.4" not in krew_version.stdout) and ansible_architecture == "x86_64"
