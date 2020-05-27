@@ -33,6 +33,8 @@
 - name: Update package manager
   apt: update_cache=yes
   become: true
+  become_user: root
+  register: package_debug
 
 - name: Install NTP server
   apt: name="{{ items }}" state=present

@@ -255,30 +255,30 @@
     force: yes
   when: ("Version 1.16.0 " not in kops_version.stdout) and ansible_architecture == "x86_64"
 
-- name: Check if kustomize 3.5.4 is installed
+- name: Check if kustomize 3.5.5 is installed
   shell: kustomize version
   register: kustomize_version
   failed_when: false
   changed_when: false
 
-- name: Download kustomize 3.5.4
+- name: Download kustomize 3.5.5
   get_url: 
-    url: "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv3.5.4/kustomize_v3.5.4_linux_amd64.tar.gz"
+    url: "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv3.5.5/kustomize_v3.5.5_linux_amd64.tar.gz"
     dest: /tmp/kustomize.tar.gz
     force: yes
-  when: ("Version 3.5.4 " not in kustomize_version.stdout) and ansible_architecture == "x86_64"
+  when: ("3.5.5 " not in kustomize_version.stdout) and ansible_architecture == "x86_64"
 
-- name: Extract kustomize version 3.5.4
+- name: Extract kustomize version 3.5.5
   unarchive: src=/tmp/kustomize.tar.gz dest=/tmp copy=no creates=/tmp/kustomize
-  when: ("Version 3.5.4 " not in kustomize_version.stdout) and ansible_architecture == "x86_64"
+  when: ("3.5.5 " not in kustomize_version.stdout) and ansible_architecture == "x86_64"
 
 - name: Copy extracted kustomize executable to /usr/local/bin
   command: mv /tmp/kustomize /usr/local/bin/kustomize
-  when: ("Version 3.5.4 " not in kustomize_version.stdout) and ansible_architecture == "x86_64"
+  when: ("3.5.5 " not in kustomize_version.stdout) and ansible_architecture == "x86_64"
 
 - name: Make kustomize executable
   file: path=/usr/local/bin/kustomize mode="u+x,g+x,o+x"
-  when: ("Version 3.5.4 " not in kustomize_version.stdout) and ansible_architecture == "x86_64"
+  when: ("3.5.5 " not in kustomize_version.stdout) and ansible_architecture == "x86_64"
 
 - name: Check if krew is installed
   shell: kubectl krew version
