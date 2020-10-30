@@ -65,7 +65,6 @@
   notify:
     - Restart ufw
 
-
 # Set logging
 - name: Enabled UFW logging
   ufw: logging=on
