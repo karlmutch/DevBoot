@@ -199,6 +199,31 @@
   file: dest=/home/{{user}}/.local/bin/grv mode=a+x group={{user}} owner={{user}}
   when: ("0.3.2" not in grv_version.stdout) and (ansible_architecture == "x86_64")
 
+- name: Check if gh 1.2.0 is installed
+  shell: /home/{{user}}/.local/bin/gh --version
+  register: gh_version
+  failed_when: false
+  changed_when: false
+
+- name: Download gh 1.2.0
+  get_url:
+    url: https://github.com/cli/cli/releases/download/v1.2.0/gh_1.2.0_linux_amd64.tar.gz
+    dest: /tmp/gh.tar.gz
+    force: true
+  when: ("1.2.0" not in gh_version.stdout) and (ansible_architecture == "x86_64")
+
+- name: Unpack gh
+  unarchive:
+    src: /tmp/gh.tar.gz
+    dest: /tmp
+    copy: no
+    creates: /tmp/gh_1.2.0_linux_amd64/bin/gh
+  when: ("1.2.0" not in gh_version.stdout) and (ansible_architecture == "x86_64")
+
+- name: Install gh to user {{user}} ~/.local/bin
+  command: mv -f /tmp/gh_1.2.0_linux_amd64/bin/gh /home/{{user}}/.local/bin/gh
+  when: ("1.2.0" not in gh_version.stdout) and (ansible_architecture == "x86_64")
+
 - name: Check if golangci-lint 1.32.0 is installed
   shell: /home/{{user}}/.local/bin/golangci-lint --version
   register: golangci_lint_version
@@ -273,6 +298,12 @@
     items:
     - jo
   when: ansible_architecture == "x86_64"
+
+- name: Install bashtop
+  snap:
+    name: bashtop
+    classic: yes
+  when: ansible_architecture == "x86_64" and ansible_distribution == "Ubuntu"
 
 - name: set Tekton keys from the public Ubuntu keyserver
   apt_key: keyserver=keyserver.ubuntu.com id=A40E52296E4CF9F90DD1E3BB3EFE0E0A2F2F60AA
