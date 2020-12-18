@@ -80,7 +80,7 @@
 
 - name: Download docui
   get_url: 
-    url: https://github.com/skanehira/docui/releases/download/1.0.3/docui_1.0.3_Linux_x86_64.tar.gz
+    url: https://github.com/skanehira/docui/releases/download/2.0.4/docui_2.0.4_Linux_x86_64.tar.gz
     dest: /tmp/docui.tar.gz
     force: true
   when: not docuiPath.stat.exists
@@ -101,51 +101,51 @@
   command: mv -f /tmp/docui /home/{{user}}/.local/bin/docui
   when: not docuiPath.stat.exists
 
-- name: Check if kubespy v0.4.0 is installed
+- name: Check if kubespy v0.6.0 is installed
   shell: /home/{{user}}/.local/bin/kubespy version
   register: kubespy_version
   failed_when: false
   changed_when: false
 
-- name: Download kubespy 0.4.0
+- name: Download kubespy 0.6.0
   get_url:
-      url: https://github.com/pulumi/kubespy/releases/download/v0.4.0/kubespy-linux-amd64.tar.gz
+      url: https://github.com/pulumi/kubespy/releases/download/v0.6.0/kubespy-v0.6.0-linux-amd64.tar.gz
       dest: /tmp/kubespy.tar.gz
       force: true
-  when: ("v0.4.0" not in kubespy_version.stdout) and (ansible_architecture == "x86_64")
+  when: ("v0.6.0" not in kubespy_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Clean kubespy artifact path
   file:
     state: absent
     path: "/tmp/kubespy"
-  when: ("v0.4.0" not in kubespy_version.stdout) and (ansible_architecture == "x86_64")
+  when: ("v0.6.0" not in kubespy_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Create a kubespy unpack directory
   file:
       path: /tmp/kubespy
       state: directory
       mode: "u=rw,g=wx,o=rwx"
-  when: ("v0.4.0" not in kubespy_version.stdout) and (ansible_architecture == "x86_64")
+  when: ("v0.6.0" not in kubespy_version.stdout) and (ansible_architecture == "x86_64")
 
-- name: Extract kubespy v0.4.0
+- name: Extract kubespy v0.6.0
   unarchive:
     src: /tmp/kubespy.tar.gz
     dest: /tmp/kubespy
     group: "{{user}}"
     owner: "{{user}}"
     copy: no
-  when: ("v0.4.0" not in kubespy_version.stdout) and (ansible_architecture == "x86_64")
+  when: ("v0.6.0" not in kubespy_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Set kubespy ownership
-  file: dest=/tmp/kubespy/releases/kubespy-linux-amd64/kubespy mode=a+x group={{user}} owner={{user}}
-  when: ("v0.4.0" not in kubespy_version.stdout) and (ansible_architecture == "x86_64")
+  file: dest=/tmp/kubespy/kubespy mode=a+x group={{user}} owner={{user}}
+  when: ("v0.6.0" not in kubespy_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Install kubespy to user {{user}} ~/.local/bin
-  command: mv -f /tmp/kubespy/releases/kubespy-linux-amd64/kubespy /home/{{user}}/.local/bin/kubespy
-  when: ("v0.4.0" not in kubespy_version.stdout) and (ansible_architecture == "x86_64")
+  command: mv -f /tmp/kubespy/kubespy /home/{{user}}/.local/bin/kubespy
+  when: ("v0.6.0" not in kubespy_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Clean kubespy artifact path
   file:
     state: absent
     path: "/tmp/kubespy"
-  when: ("v0.4.0" not in kubespy_version.stdout) and (ansible_architecture == "x86_64")
+  when: ("v0.6.0" not in kubespy_version.stdout) and (ansible_architecture == "x86_64")
