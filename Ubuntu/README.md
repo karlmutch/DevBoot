@@ -1,5 +1,5 @@
 For installation instructions related to ansible please use the information 
-found at http://docs.ansible.com/ansible/intro_installation.html#getting-ansible.
+found at https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#installing-ansible-on-ubuntu.
 The main prerequisite for ansible is that python be installed on the Linux systems.
 
 When using the tasks present within this repository a user account will be created
