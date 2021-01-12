@@ -24,6 +24,14 @@
         - "default.packagenames.yml"
       paths: "./vars/"
 
+- name: Obtain OS exec name
+  shell: uname | tr '[:upper:]' '[:lower:]'
+  register: shell_uname_exec_result
+
+- name: Obtain OS default name
+  shell: uname -s
+  register: shell_uname_result
+
 - name: install OS Specific repositories
   apt_repository: repo='{{ item }}' update_cache=yes
   when: package_repos is defined
@@ -254,7 +262,7 @@
 
 #- name: Check if atom is installed
 #  command: dpkg-query -W atom
-#  register: atom_check_deb
+#  register: atom_check_debs
 #  failed_when: atom_check_deb.rc > 1
 #  changed_when: atom_check_deb.rc == 1
 
@@ -268,6 +276,63 @@
 #  apt: deb="/tmp/atom-amd64.deb"
 #  become: true
 #  when: atom_check_deb.rc == 1
+
+- name: Check if awscli 2.1.17 is installed
+  shell: aws --version
+  register: aws_version
+  failed_when: false
+  changed_when: false
+
+- name: Download awscli 2.1.17
+  get_url: 
+    url: "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"
+
+    dest: /tmp/awscli.zip
+    owner: root
+    group: root
+    mode: 0666
+    force: yes
+  when: ("2.1.17 " not in aws_version.stdout) and ansible_architecture == "x86_64"
+
+- name: Extract awscli version 2.1.17
+  unarchive: src=/tmp/awscli.zip dest=/tmp copy=no creates=/tmp/aws
+  when: ("2.1.17" not in aws_version.stdout) and ansible_architecture == "x86_64"
+
+- name: Install awscli 2.1.17
+  shell: /tmp/aws/install --update
+  register: aws_shell_result
+  when: ("2.1.17" not in aws_version.stdout) and ansible_architecture == "x86_64"
+
+- name: Remove the temporary awscli directory
+  file:
+    path: "/tmp/aws"
+    state: absent
+  when: ("2.1.17" not in aws_version.stdout) and ansible_architecture == "x86_64"
+
+- name: Check if eksctl 0.35.0 is installed
+  shell: eksctl version
+  register: eksctl_version
+  failed_when: false
+  changed_when: false
+
+- name: Download eksctl 0.35.0
+  get_url: 
+    url: "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_{{ shell_uname_result.stdout }}_amd64.tar.gz"
+
+    dest: /tmp/eksctl.tar.gz
+    owner: root
+    group: root
+    mode: 0666
+    force: yes
+  when: ("0.35.0" not in eksctl_version.stdout) and ansible_architecture == "x86_64"
+
+- name: Extract eksctl version 2.1.17
+  unarchive: src=/tmp/eksctl.tar.gz dest=/tmp copy=no creates=/tmp/eksctl
+  when: ("0.35.0" not in eksctl_version.stdout) and ansible_architecture == "x86_64"
+
+- name: Copy extracted eksctl executable to /usr/local/bin
+  command: mv /tmp/eksctl /usr/local/bin/eksctl
+  when: ("0.35.0" not in eksctl_version.stdout) and ansible_architecture == "x86_64"
 
 - name: Check if kops 1.18.2 is installed
   shell: kops version
@@ -339,14 +404,9 @@
   unarchive: src={{ krew_temp.path }}/krew.tar.gz dest={{ krew_temp.path }} copy=no
   when: ("unknown command" in krew_version.stderr) and ansible_architecture == "x86_64"
 
-- name: Obtain OS exec name
-  shell: uname | tr '[:upper:]' '[:lower:]'
-  register: shell_result
-  when: ("unknown command" in krew_version.stderr) and ansible_architecture == "x86_64"
-
 - name: Install krew 0.4.0 from tar archive
   shell:
-    cmd: ./krew-{{ shell_result.stdout }}_amd64 install --manifest=krew.yaml --archive=krew.tar.gz
+    cmd: ./krew-{{ shell_uname_exec_result.stdout }}_amd64 install --manifest=krew.yaml --archive=krew.tar.gz
     chdir: "{{ krew_temp.path }}"
   become: true
   become_user: '{{ ansible_env.SUDO_USER }}'
@@ -354,7 +414,7 @@
 
 - name: Update krew index using installer
   shell:
-    cmd: ./krew-{{ shell_result.stdout }}_amd64 update
+    cmd: ./krew-{{ shell_uname_exec_result.stdout }}_amd64 update
     chdir: "{{ krew_temp.path }}"
   become: true
   become_user: '{{ ansible_env.SUDO_USER }}'
