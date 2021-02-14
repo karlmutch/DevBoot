@@ -29,16 +29,30 @@
   when: package_repos is defined
   with_items: "{{ package_repos }}"
 
-
 - name: install OS Specific packages
   package: name='{{ package_names }}' state=present
   when: package_names is defined
+
+- name: set Ubuntu keyserver
+  apt_key: keyserver=keyserver.ubuntu.com id=36A1D7869245C8950F966E92D8576A8BA88D21E9
+
+- name: github keyserver
+  apt_key: keyserver=keyserver.ubuntu.com id=C99B11DEB97541F0
 
 - name: Add Security repo and git toolsets ubuntu repositories
   apt_repository: repo='{{ item }}' update_cache=yes
   with_items:
     - ppa:git-core/ppa
     - ppa:brightbox/ruby-ng
+    - deb https://cli.github.com/packages {{ansible_distribution_release}} main
+
+- name: Install github CLI
+  apt: 
+    name: "{{ items }}"
+    state: present
+  vars:
+    items:
+    - gh
 
 - name: Add JSon processing repos
   apt_repository: repo=ppa:duggan/jo update_cache=yes
@@ -198,31 +212,6 @@
 - name: Enable grv
   file: dest=/home/{{user}}/.local/bin/grv mode=a+x group={{user}} owner={{user}}
   when: ("0.3.2" not in grv_version.stdout) and (ansible_architecture == "x86_64")
-
-- name: Check if gh 1.4.0 is installed
-  shell: /home/{{user}}/.local/bin/gh --version
-  register: gh_version
-  failed_when: false
-  changed_when: false
-
-- name: Download gh 1.4.0
-  get_url:
-    url: https://github.com/cli/cli/releases/download/v1.4.0/gh_1.4.0_linux_amd64.tar.gz
-    dest: /tmp/gh.tar.gz
-    force: true
-  when: ("1.4.0" not in gh_version.stdout) and (ansible_architecture == "x86_64")
-
-- name: Unpack gh
-  unarchive:
-    src: /tmp/gh.tar.gz
-    dest: /tmp
-    copy: no
-    creates: /tmp/gh_1.4.0_linux_amd64/bin/gh
-  when: ("1.4.0" not in gh_version.stdout) and (ansible_architecture == "x86_64")
-
-- name: Install gh to user {{user}} ~/.local/bin
-  command: mv -f /tmp/gh_1.4.0_linux_amd64/bin/gh /home/{{user}}/.local/bin/gh
-  when: ("1.4.0" not in gh_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Check if golangci-lint 1.34.1 is installed
   shell: /home/{{user}}/.local/bin/golangci-lint --version
