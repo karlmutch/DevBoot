@@ -1,4 +1,8 @@
 ---
+- name: Test OS for WSL2
+  shell: grep -qE "(Microsoft|WSL|microsoft-standard-WSL2)" /proc/version
+  register: WSL
+
 - name: Install general certs
   apt: 
     name: "{{ items }}" 
