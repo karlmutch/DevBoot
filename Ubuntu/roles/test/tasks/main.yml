@@ -1,7 +1,11 @@
 ---
 - name: Test OS for WSL2
-  shell: grep -qE "(Microsoft|WSL|microsoft-standard-WSL2)" /proc/version
+  shell: grep -qE "(Microsoft|WSL|microsoft-standard-WSL2)" /proc/version 2>/dev/null
   register: WSL
+  ignore_errors: True
+  no_log: True
+  args:
+      warn: False
 
 - name: "Ansible | Print a variable"
   debug:
