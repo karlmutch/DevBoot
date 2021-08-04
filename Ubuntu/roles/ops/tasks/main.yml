@@ -32,15 +32,23 @@
   shell: uname -s
   register: shell_uname_result
 
-- name: install OS Specific repositories
-  apt_repository: repo='{{ item }}' update_cache=yes
-  when: package_repos is defined
-  with_items: "{{ package_repos }}"
+- name: Test OS for WSL2
+  shell: grep -qE "(Microsoft|WSL|microsoft-standard-WSL2)" /proc/version 2>/dev/null
+  register: WSL
+  ignore_errors: True
+  no_log: True
+  args:
+      warn: False
 
 - name: Add an Apt signing key for kubectl, a kubernetes tool.
   apt_key:
     url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
     state: present
+
+- name: install OS Specific repositories
+  apt_repository: repo='{{ item }}' update_cache=yes
+  when: package_repos is defined
+  with_items: "{{ package_repos }}"
 
 
 - name: install OS Specific packages
@@ -52,11 +60,17 @@
   with_items:
     - ppa:git-core/ppa
 
+- name: install bcc keys
+  apt_key:
+    keyserver: keyserver.ubuntu.com
+    id: 4052245BD4284CDD
+
 - name: Add development tool sets ubuntu repositories
   apt_repository: repo='{{ item }}' update_cache=yes
   with_items:
     - ppa:pi-rho/dev
     - ppa:neovim-ppa/unstable
+    - deb https://repo.iovisor.org/apt/xenial xenial main
   when: ansible_architecture == "x86_64"
 
 - name: Add development tool sets ubuntu repositories
@@ -161,7 +175,7 @@
   snap:
     name: procs
     classic: yes
-  when: ansible_architecture == "x86_64" and ansible_distribution == "Ubuntu"
+  when: ansible_architecture == "x86_64" and ansible_distribution == "Ubuntu" and WSL.rc == 1
 
 - name: Check if lnav 0.9.5 is installed
   shell: lnav -V
@@ -321,79 +335,76 @@
     state: absent
   when: ("2.2.0" not in aws_version.stdout) and ansible_architecture == "x86_64"
 
-- name: Check if eksctl 0.46.0 is installed
+- name: Check if eksctl 0.59.0 is installed
   shell: eksctl version
   register: eksctl_version
   failed_when: false
   changed_when: false
 
-- name: Download eksctl 0.46.0
+- name: Download eksctl 0.59.0
   get_url: 
-    url: "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_{{ shell_uname_result.stdout }}_amd64.tar.gz"
-
+    url: "https://github.com/weaveworks/eksctl/releases/download/0.59.0/eksctl_{{ shell_uname_result.stdout }}_amd64.tar.gz"
     dest: /tmp/eksctl.tar.gz
     owner: root
     group: root
     mode: 0666
     force: yes
-  when: ("0.46.0" not in eksctl_version.stdout) and ansible_architecture == "x86_64"
+  when: ("0.59.0" not in eksctl_version.stdout) and ansible_architecture == "x86_64"
 
-- name: Extract eksctl version 2.1.17
+- name: Extract eksctl version 0.59.0
   unarchive: src=/tmp/eksctl.tar.gz dest=/tmp copy=no creates=/tmp/eksctl
-  when: ("0.46.0" not in eksctl_version.stdout) and ansible_architecture == "x86_64"
+  when: ("0.59.0" not in eksctl_version.stdout) and ansible_architecture == "x86_64"
 
 - name: Copy extracted eksctl executable to /usr/local/bin
   command: mv /tmp/eksctl /usr/local/bin/eksctl
-  when: ("0.46.0" not in eksctl_version.stdout) and ansible_architecture == "x86_64"
+  when: ("0.59.0" not in eksctl_version.stdout) and ansible_architecture == "x86_64"
 
-- name: Check if kops 1.18.2 is installed
+- name: Check if kops 1.21.0 is installed
   shell: kops version
   register: kops_version
   failed_when: false
   changed_when: false
 
-- name: Download kops 1.18.2
+- name: Download kops 1.21.0
   get_url: 
-    url: "https://github.com/kubernetes/kops/releases/download/v1.18.2/kops-linux-amd64"
+    url: "https://github.com/kubernetes/kops/releases/download/v1.21.0/kops-linux-amd64"
 
     dest: /usr/local/bin/kops
     owner: root
     group: root
     mode: 0755
     force: yes
-  when: ("Version 1.18.2 " not in kops_version.stdout) and ansible_architecture == "x86_64"
+  when: ("Version 1.21.0 " not in kops_version.stdout) and ansible_architecture == "x86_64"
 
-- name: Check if kustomize 4.1.2 installed
+- name: Check if kustomize 4.2.0 installed
   shell: kustomize version
   register: kustomize_version
   failed_when: false
   changed_when: false
 
-- name: Download kustomize 4.1.2
+- name: Download kustomize 4.2.0
   get_url: 
-    url: "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv4.1.2/kustomize_v4.1.2_linux_amd64.tar.gz"
+    url: "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv4.2.0/kustomize_v4.2.0_linux_amd64.tar.gz"
     dest: /tmp/kustomize.tar.gz
     force: yes
-  when: ("4.1.2 " not in kustomize_version.stdout) and ansible_architecture == "x86_64"
+  when: ("4.2.0 " not in kustomize_version.stdout) and ansible_architecture == "x86_64"
 
-- name: Extract kustomize version 4.1.2
+- name: Extract kustomize version 4.2.0
   unarchive: src=/tmp/kustomize.tar.gz dest=/tmp copy=no creates=/tmp/kustomize
-  when: ("4.1.2 " not in kustomize_version.stdout) and ansible_architecture == "x86_64"
+  when: ("4.2.0 " not in kustomize_version.stdout) and ansible_architecture == "x86_64"
 
 - name: Copy extracted kustomize executable to /usr/local/bin
   command: mv /tmp/kustomize /usr/local/bin/kustomize
-  when: ("4.1.2 " not in kustomize_version.stdout) and ansible_architecture == "x86_64"
+  when: ("4.2.0 " not in kustomize_version.stdout) and ansible_architecture == "x86_64"
 
 - name: Make kustomize executable
   file: path=/usr/local/bin/kustomize mode="u+x,g+x,o+x"
-  when: ("4.1.2 " not in kustomize_version.stdout) and ansible_architecture == "x86_64"
+  when: ("4.2.0 " not in kustomize_version.stdout) and ansible_architecture == "x86_64"
 
 - name: Check if krew is installed
   shell: kubectl krew version
   environment:
       PATH: '{{ ansible_env.PATH }}:/home/{{ ansible_env.SUDO_USER }}/.krew/bin'
-  become: true
-  become_user: '{{ ansible_env.SUDO_USER }}'
   register: krew_version
   failed_when: false
   changed_when: false
@@ -413,23 +424,24 @@
   when: ("unknown command" in krew_version.stderr) and ansible_architecture == "x86_64"
 
 - name: Extract krew installer
-  unarchive: src={{ krew_temp.path }}/krew.tar.gz dest={{ krew_temp.path }} copy=no
+  unarchive: 
+    src={{ krew_temp.path }}/krew.tar.gz
+    dest={{ krew_temp.path }}
+    owner='{{ ansible_env.USER }}'
+    group='{{ ansible_env.USER }}'
+    copy=no
   when: ("unknown command" in krew_version.stderr) and ansible_architecture == "x86_64"
 
 - name: Install krew 0.4.1 from tar archive
   shell:
     cmd: ./krew-{{ shell_uname_exec_result.stdout }}_amd64 install --manifest=krew.yaml --archive=krew.tar.gz
     chdir: "{{ krew_temp.path }}"
-  become: true
-  become_user: '{{ ansible_env.SUDO_USER }}'
   when: ("unknown command" in krew_version.stderr) and ansible_architecture == "x86_64"
 
 - name: Update krew index using installer
   shell:
     cmd: ./krew-{{ shell_uname_exec_result.stdout }}_amd64 update
     chdir: "{{ krew_temp.path }}"
-  become: true
-  become_user: '{{ ansible_env.SUDO_USER }}'
   when: ("unknown command" in krew_version.stderr) and ansible_architecture == "x86_64"
 
 - name: Remove the temporary krew directory
@@ -442,8 +454,6 @@
   command: kubectl krew version
   environment:
       PATH: '{{ ansible_env.PATH }}:/home/{{ ansible_env.SUDO_USER }}/.krew/bin'
-  become: true
-  become_user: '{{ ansible_env.SUDO_USER }}'
   register: krew_version
   failed_when: false
   changed_when: false
@@ -452,24 +462,18 @@
   command: kubectl krew system receipts-upgrade
   environment:
       PATH: '{{ ansible_env.PATH }}:/home/{{ ansible_env.SUDO_USER }}/.krew/bin'
-  become: true
-  become_user: '{{ ansible_env.SUDO_USER }}'
   when: ("v0.4.1" not in krew_version.stdout) and ansible_architecture == "x86_64"
 
 - name: Update krew index
   command: kubectl krew update
   environment:
       PATH: '{{ ansible_env.PATH }}:/home/{{ ansible_env.SUDO_USER }}/.krew/bin'
-  become: true
-  become_user: '{{ ansible_env.SUDO_USER }}'
   when: ("v0.4.1" not in krew_version.stdout) and ansible_architecture == "x86_64"
 
 - name: Upgrade krew plugin
   shell: kubectl krew upgrade krew
   environment:
       PATH: '{{ ansible_env.PATH }}:/home/{{ ansible_env.SUDO_USER }}/.krew/bin'
-  become: true
-  become_user: '{{ ansible_env.SUDO_USER }}'
   register: upgrade_krew
   ignore_errors: yes
   when: ("v0.4.1" not in krew_version.stdout) and ansible_architecture == "x86_64"

@@ -11,3 +11,7 @@
   debug:
     msg: "The operating system is WSL2"
   when: WSL.rc == 0
+
+- name: Remote server ansible variables
+  debug:
+    msg: "{{ ansible_env.HOME }}"

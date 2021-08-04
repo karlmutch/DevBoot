@@ -1,0 +1,5 @@
+package_names: libhttp-parser2.9,screenfetch,neofetch
+package_repos:
+    - ppa:dawidd0811/neofetch
+    - deb http://packages.cloud.google.com/apt kubernetes-xenial main
+

@@ -9,7 +9,7 @@
 - name: Provisioning for a Polyglot Developer machine
   become: yes
   hosts: localhost
-  remote_user: root
+  remote_user: kmutch
 
   roles:
     - test

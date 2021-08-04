@@ -39,6 +39,9 @@ Your inventory should contain an entry such as:
 
 ```karlmutch.com ansible_connection=ssh        ansible_user=ubuntu```
 
+If you are using WSL2 in a local situation then the install will use an implicit locahost and you
+wont need to update the inventory file.
+
 Bare metal and non cloud deployments
 ---
 
@@ -83,3 +86,7 @@ command such as the following to update an existing machine with an existing dev
 account.
 
 ```ansible-playbook -i "localhost," --become-user=kmutch -u kmutch -c local limited.yml -u kmutch ```
+
+Another option is to use the following:
+
+```ansible-playbook --connection=local ```
