@@ -184,7 +184,7 @@
 
 - name: Copy thwate root CA file
   command: cp /etc/ssl/certs/thawte_Primary_Root_CA.pem /etc/postfix/cacert.pem
-  when: WSL.rc == 1
+  when: WSL.rc == 1 and (ansible_distribution != "Ubuntu") and (ansible_distribution_major_version != "20")
 
 - name: Create the postfix relay password file 
   file: path=/etc/postfix/sasl/sasl_password state=touch
