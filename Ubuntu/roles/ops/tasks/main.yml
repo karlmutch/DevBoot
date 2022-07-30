@@ -135,13 +135,30 @@
     - kubectl
     - tailscale
 
-- name: Install core tooling for admin and access
+- name: Install core tooling for eBPF
   apt:
       name: "{{ items }}"
       state: present
   vars:
     items:
     - bcc-tools
+  when: ansible_architecture == "x86_64" and (ansible_distribution == "Ubuntu") and (ansible_distribution_major_version == "18")
+
+- name: Install core tooling for eBPF
+  apt:
+      name: "{{ items }}"
+      state: present
+  vars:
+    items:
+    - bpfcc-tools
+  when: ansible_architecture == "x86_64" and (ansible_distribution == "Ubuntu") and (ansible_distribution_major_version == "18")
+
+- name: Install core tooling for admin and access
+  apt:
+      name: "{{ items }}"
+      state: present
+  vars:
+    items:
     - neovim
   when: ansible_architecture == "x86_64"
 
@@ -474,11 +491,12 @@
   when: ("v0.4.2" not in krew_version.stdout) and ansible_architecture == "x86_64"
 
 - fail: msg="{{ upgrade_krew }}"
-  when: ('the newest version is already installed' not in upgrade_krew) and ("v0.4.2" not in krew_version.stdout) and ansible_architecture == "x86_64"
+  when: ('the newest version is already installed' not in upgrade_krew) and ('it is already on the newest version' not in upgrade_krew.stderr) and ("v0.4.2" not in krew_version.stdout) and ansible_architecture == "x86_64"
 
 - name: Update krew index
   command: kubectl krew update
   environment:
       PATH: '{{ ansible_env.PATH }}:/home/{{ ansible_env.SUDO_USER }}/.krew/bin'
   become: no
+  ignore_errors: True
   when: ("v0.4.2" not in krew_version.stdout) and ansible_architecture == "x86_64"
