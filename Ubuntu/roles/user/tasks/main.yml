@@ -14,7 +14,7 @@
   group: name={{user}} state=present
 
 - name: Add local developer user account
-  user: name={{user}} group={{user}} groups=sudo,adm,docker append=yes shell=/bin/zsh state=present
+  user: name={{user}} group={{user}} groups=sudo,adm,docker,kvm append=yes shell=/bin/zsh state=present
 
 - name: Add local developer ssh keys
   user: name={{user}} ssh_key_file=.ssh/id_ed25519 ssh_key_type=ed25519 generate_ssh_key=yes
