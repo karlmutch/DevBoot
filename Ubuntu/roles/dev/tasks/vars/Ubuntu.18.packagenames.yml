@@ -1,1 +1,9 @@
-package_names: clang-format-6.0,libreadline7,libreadline-dev,libboost1.65-all-dev
+package_names: 
+    - clang-format-6.0
+    - libreadline7
+    - libreadline-dev
+    - libboost1.65-all-dev
+    - pyton-pygments
+package_repos:
+    - ppa:brightbox/ruby-ng
+    - ppa:bashtop-monitor/bashtop

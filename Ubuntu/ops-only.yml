@@ -5,12 +5,3 @@
 
   roles:
     - ops
-
-- name: Provisioning for a Polyglot Developer machine
-  become: yes
-  hosts: localhost
-  remote_user: kmutch
-
-  roles:
-    - ops
-

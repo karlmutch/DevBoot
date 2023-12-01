@@ -1,4 +1,4 @@
-package_names: libhttp-parser2.7.1,screenfetch,neofetch
+package_names: libhttp-parser2.7.1,screenfetch,neofetch,gvfs-bin
 package_repos:
     - ppa:dawidd0811/neofetch
     - deb http://apt.kubernetes.io/ kubernetes-xenial main
