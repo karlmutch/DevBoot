@@ -139,26 +139,40 @@
 
 - name: Download RipGrep
   get_url: 
-    url: https://github.com/BurntSushi/ripgrep/releases/download/14.0.3/ripgrep-14.0.3-x86_64-unknown-linux-musl.tar.gz
-    dest: /tmp/ripgrep-x86_64-unknown-linux-musl.tar.gz
+    url: https://github.com/BurntSushi/ripgrep/releases/download/14.0.3/ripgrep-14.0.3-{{ansible_architecture}}-unknown-linux-musl.tar.gz
+    dest: /tmp/ripgrep-{{ansible_architecture}}-unknown-linux-musl.tar.gz
     force: true
   when: ("ripgrep 14.0.3" not in rg_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Unpack RipGrep
   unarchive:
-    src: /tmp/ripgrep-x86_64-unknown-linux-musl.tar.gz
+    src: /tmp/ripgrep-{{ansible_architecture}}-unknown-linux-musl.tar.gz
     dest: /tmp
     copy: no
     creates: "/tmp/ripgrep-14.0.3-x86_64-unknown-linux-musl/rg"
   when: ("ripgrep 14.0.3" not in rg_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Set Ripgrep ownership
-  file: dest=/tmp/ripgrep-14.0.3-x86_64-unknown-linux-musl/rg mode=a+x group={{user}} owner={{user}}
+  file: dest=/tmp/ripgrep-14.0.3-{{ansible_architecture}}-unknown-linux-musl/rg mode=a+x group={{user}} owner={{user}}
   when: ("ripgrep 14.0.3" not in rg_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Install RipGrep to user {{user}} ~/.local/bin
-  command: mv -f /tmp/ripgrep-14.0.3-x86_64-unknown-linux-musl/rg /home/{{user}}/.local/bin/rg
+  command: mv -f /tmp/ripgrep-14.0.3-{{ansible_architecture}}-unknown-linux-musl/rg /home/{{user}}/.local/bin/rg
   when: ("ripgrep 14.0.3" not in rg_version.stdout) and (ansible_architecture == "x86_64")
+
+- name: Check if buf build 1.28.1 is installed
+  shell: /home/{{user}}/.local/bin/buf --version
+  register: buf_version
+  failed_when: false
+  changed_when: false
+
+- name: Download buf build into ~/.local/bin/buf
+  get_url: 
+    url: https://github.com/bufbuild/buf/releases/download/v1.28.1/buf-Linux-{{ansible_architecture}}
+    dest: /home/{{user}}/.local/bin/buf
+    mode: 0755
+    force: true
+  when: ("1.28.1" not in buf_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Check if git-delta 0.16.5 is installed
   shell: /home/{{user}}/.local/bin/delta -V
@@ -168,7 +182,7 @@
 
 - name: Download git-delta
   get_url: 
-    url: https://github.com/dandavison/delta/releases/download/0.16.5/delta-0.16.5-x86_64-unknown-linux-musl.tar.gz
+    url: https://github.com/dandavison/delta/releases/download/0.16.5/delta-0.16.5-{{ansible_architecture}}-unknown-linux-musl.tar.gz
     dest: /tmp/delta.tar.gz
     force: true
   when: ("delta 0.16.5" not in delta_version.stdout) and (ansible_architecture == "x86_64")
@@ -178,15 +192,15 @@
     src: /tmp/delta.tar.gz
     dest: /tmp
     copy: no
-    creates: "/tmp/delta-0.16.5-x86_64-unknown-linux-musl/delta"
+    creates: /tmp/delta-0.16.5-{{ansible_architecture}}-unknown-linux-musl/delta
   when: ("delta 0.16.5" not in delta_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Set git-delta ownership
-  file: dest=/tmp/delta-0.16.5-x86_64-unknown-linux-musl/delta mode=a+x group={{user}} owner={{user}}
+  file: dest=/tmp/delta-0.16.5-{{ansible_architecture}}-unknown-linux-musl/delta mode=a+x group={{user}} owner={{user}}
   when: ("delta 0.16.5" not in delta_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Install git-delta to user {{user}} ~/.local/bin
-  command: mv -f /tmp/delta-0.16.5-x86_64-unknown-linux-musl/delta /home/{{user}}/.local/bin/delta
+  command: mv -f /tmp/delta-0.16.5-{{ansible_architecture}}-unknown-linux-musl/delta /home/{{user}}/.local/bin/delta
   when: ("delta 0.16.5" not in delta_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Check if direnv 2.33.0 is installed
