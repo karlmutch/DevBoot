@@ -237,6 +237,27 @@
   file: dest=/home/{{user}}/.local/bin/grv mode=a+x group={{user}} owner={{user}}
   when: ("0.3.2" not in grv_version.stdout) and (ansible_architecture == "x86_64")
 
+- name: Check if grpcurl 1.8.9 is installed
+  shell: /home/{{user}}/.local/bin/grpcurl -version
+  register: grpc_version
+  failed_when: false
+  changed_when: false
+
+- name: Download grpcurl 1.8.9
+  get_url:
+    url: https://github.com/fullstorydev/grpcurl/releases/download/v1.8.9/grpcurl_1.8.9_linux_x86_64.tar.gz
+    dest: /tmp
+    force: true
+  when: ("1.8.9" not in grpc_version.stdout) and (ansible_architecture == "x86_64")
+
+- name: Set grpcurl ownership
+  file: dest=/tmp/grpcurl mode=a+x group={{user}} owner={{user}}
+  when: ("1.8.9" not in grpc_version.stdout) and (ansible_architecture == "x86_64")
+
+- name: Install grpcurl to user {{user}} ~/.local/bin
+  command: mv -f /tmp/grpcurl /home/{{user}}/.local/bin/grpcurl
+  when: ("1.8.9" not in grpc_version.stdout) and (ansible_architecture == "x86_64")
+
 - name: Check if golangci-lint 1.55.2 is installed
   shell: /home/{{user}}/.local/bin/golangci-lint --version
   register: golangci_lint_version
