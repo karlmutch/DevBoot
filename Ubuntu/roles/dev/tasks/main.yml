@@ -60,8 +60,9 @@
     mode: '+x'
 
 - name: Install dagger from script
-  command: sh /tmp/dagger.sh
-  chdir: /home/{{user}}/.local
+  command: 
+    cmd: sh /tmp/dagger.sh
+    chdir: /home/{{user}}/.local
   args:
     creates: /home/{{user}}/.local/bin/dagger
 
@@ -249,6 +250,14 @@
     url: https://github.com/fullstorydev/grpcurl/releases/download/v1.8.9/grpcurl_1.8.9_linux_x86_64.tar.gz
     dest: /tmp
     force: true
+  when: ("1.8.9" not in grpc_version.stdout) and (ansible_architecture == "x86_64")
+
+- name: Unpack grpcurl
+  unarchive:
+    src: /tmp/grpcurl_1.8.9_linux_x86_64.tar.gz
+    dest: /tmp
+    copy: no
+    creates: "/tmp/grpcurl"
   when: ("1.8.9" not in grpc_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Set grpcurl ownership
