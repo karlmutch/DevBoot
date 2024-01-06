@@ -54,7 +54,7 @@
   vars:
     items:
     - lsb-core
-  when: ansible_architecture == "x86_64" and (ansible_distribution == "Ubuntu") and ( {{ ansible_distribution_major_version | int }} < 23)
+  when: ansible_architecture == "x86_64" and (ansible_distribution == "Ubuntu") and ( ansible_distribution_major_version | int < 23)
 
 - name: Install LSB tools
   apt: name="{{ items }}" state=present
@@ -62,7 +62,7 @@
     items:
     - lsb-base
     - lsb-release
-  when: ansible_architecture == "x86_64" and (ansible_distribution == "Ubuntu") and ( {{ ansible_distribution_major_version | int }} >= 23)
+  when: ansible_architecture == "x86_64" and (ansible_distribution == "Ubuntu") and ( ansible_distribution_major_version | int >= 23)
 
 - name: Install NTP server
   apt: name="{{ items }}" state=present

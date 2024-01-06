@@ -82,6 +82,7 @@
   apt_repository: repo='{{ item }}' update_cache=yes
   with_items:
     - ppa:git-core/ppa
+  when: ansible_architecture == "x86_64" and (ansible_distribution == "Ubuntu") and ( ansible_distribution_major_version | int < 23)
 
 - name: install bcc keys
   apt_key:
@@ -98,7 +99,7 @@
   apt_repository: repo='{{ item }}' update_cache=yes
   with_items:
     - ppa:pi-rho/dev
-  when: ansible_architecture == "x86_64" and (ansible_distribution == "Ubuntu") and ( {{ ansible_distribution_major_version | int }} < 23)
+  when: ansible_architecture == "x86_64" and (ansible_distribution == "Ubuntu") and ( ansible_distribution_major_version | int < 23)
 
 - name: Tailscale signing key
   become: yes
@@ -118,7 +119,7 @@
       - rxvt-unicode-256color
     state: latest
     update_cache: true
-  when: ansible_architecture == "x86_64" and (ansible_distribution == "Ubuntu") and ( {{ ansible_distribution_major_version | int }} < 23)
+  when: ansible_architecture == "x86_64" and (ansible_distribution == "Ubuntu") and ( ansible_distribution_major_version | int < 23)
 
 - ansible.builtin.apt:
     clean: yes
