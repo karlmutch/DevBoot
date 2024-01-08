@@ -67,15 +67,15 @@
 
 - name: Setup automatic periodic apt updates
   lineinfile: dest=/etc/apt/apt.conf.d/10periodic line="APT::Periodic::Update-Package-Lists \"1\";" state=present
-  when: ansible_architecture == "x86_64" and (ansible_distribution == "Ubuntu") and ( {{ ansible_distribution_major_version | int }} < 23)
+  when: ansible_architecture == "x86_64" and (ansible_distribution == "Ubuntu") and ( ansible_distribution_major_version | int < 23)
 
 - name: Setup automatic periodic apt package downloads
   lineinfile: dest=/etc/apt/apt.conf.d/10periodic state=present line="APT::Periodic::Download-Upgradeable-Packages \"1\";"
-  when: ansible_architecture == "x86_64" and (ansible_distribution == "Ubuntu") and ( {{ ansible_distribution_major_version | int }} < 23)
+  when: ansible_architecture == "x86_64" and (ansible_distribution == "Ubuntu") and ( ansible_distribution_major_version | int < 23)
 
 - name: Setup automatic periodic apt package auto clean
   lineinfile: dest=/etc/apt/apt.conf.d/10periodic state=present line="APT::Periodic::AutocleanInterval \"7\";"
-  when: ansible_architecture == "x86_64" and (ansible_distribution == "Ubuntu") and ( {{ ansible_distribution_major_version | int }} < 23)
+  when: ansible_architecture == "x86_64" and (ansible_distribution == "Ubuntu") and ( ansible_distribution_major_version | int < 23)
 
 # ufw supports connection rate limiting, which is useful for protecting
 # against brute-force login attacks. ufw will deny connections if an IP
