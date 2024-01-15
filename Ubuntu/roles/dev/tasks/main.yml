@@ -53,6 +53,19 @@
     items:
     - gh
 
+- name: Get users homedir
+  local_action: command echo ~{{ user }}
+  register: home_output
+
+- set_fact:
+    homedir: "{{ home_output.stdout }}"
+
+- name: Creates users .local directory
+  file:
+    dest: "{{homedir}}/.local/bin"
+    state: directory
+    recurse: yes
+
 - name: Download dagger.io installer
   get_url:
     url: https://dl.dagger.io/dagger/install.sh
@@ -62,9 +75,9 @@
 - name: Install dagger from script
   command: 
     cmd: sh /tmp/dagger.sh
-    chdir: /home/{{user}}/.local
+    chdir: "{{homedir}}/.local"
   args:
-    creates: /home/{{user}}/.local/bin/dagger
+    creates: "{{homedir}}/.local/bin/dagger"
 
 - name: Add JSon processing repos
   apt_repository: repo=ppa:duggan/jo update_cache=yes
@@ -81,41 +94,38 @@
     - libxen-4.6
   when: (ansible_distribution != "Ubuntu") and (ansible_distribution_major_version != "14")
 
-- name: Create user ~/.local/bin directory
-  file: path=/home/{{user}}/.local/bin state=directory group={{user}} owner={{user}}
-
-- name: Check if Go 1.21.5 is installed
-  shell: /home/{{user}}/go/bin/go version
+- name: Check if Go 1.21.6 is installed
+  shell: "{{homedir}}/go/bin/go version"
   register: go_version
   failed_when: false
   changed_when: false
 
-- name: Download Go 1.21.5
+- name: Download Go 1.21.6
   get_url:
-      url: https://storage.googleapis.com/golang/go1.21.5.linux-amd64.tar.gz
+      url: https://storage.googleapis.com/golang/go1.21.6.linux-amd64.tar.gz
       dest: /tmp/go.linux-amd64.tar.gz
       force: true
-  when: ("go1.21.5" not in go_version.stdout) and (ansible_architecture == "x86_64")
+  when: ("go1.21.6" not in go_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Clean artifact path
   file:
     state: absent
-    path: "/home/{{user}}/go"
-  when: ("go1.21.5" not in go_version.stdout) and (ansible_architecture == "x86_64")
+    path: "{{homedir}}/go"
+  when: ("go1.21.6" not in go_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Check for clean go directory
   stat: 
-      path: "/home/{{user}}/go"
+      path: "{{homedir}}/go"
   register: goPath
 
-- name: Install Go 1.21.5 locally for user {{user}}
+- name: Install Go 1.21.6 locally for user {{user}}
   unarchive:
     src: /tmp/go.linux-amd64.tar.gz
-    dest: "/home/{{user}}"
+    dest: "{{homedir}}"
     group: "{{user}}"
     owner: "{{user}}"
     copy: no
-  when: not goPath.stat.exists and ("go1.21.5" not in go_version.stdout) and (ansible_architecture == "x86_64")
+  when: not goPath.stat.exists and ("go1.21.6" not in go_version.stdout) and (ansible_architecture == "x86_64")
 
 - sysctl:
     name: kernel.panic
@@ -133,37 +143,37 @@
     #group: root
     #mode: 0200
 
-- name: Check if RipGrep 14.0.3 is installed
-  shell: /home/{{user}}/.local/bin/rg -V
+- name: Check if RipGrep 14.1.0 is installed
+  shell: "{{homedir}}/.local/bin/rg -V"
   register: rg_version
   failed_when: false
   changed_when: false
 
 - name: Download RipGrep
   get_url: 
-    url: https://github.com/BurntSushi/ripgrep/releases/download/14.0.3/ripgrep-14.0.3-{{ansible_architecture}}-unknown-linux-musl.tar.gz
+    url: https://github.com/BurntSushi/ripgrep/releases/download/14.1.0/ripgrep-14.1.0-{{ansible_architecture}}-unknown-linux-musl.tar.gz
     dest: /tmp/ripgrep-{{ansible_architecture}}-unknown-linux-musl.tar.gz
     force: true
-  when: ("ripgrep 14.0.3" not in rg_version.stdout) and (ansible_architecture == "x86_64")
+  when: ("ripgrep 14.1.0" not in rg_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Unpack RipGrep
   unarchive:
     src: /tmp/ripgrep-{{ansible_architecture}}-unknown-linux-musl.tar.gz
     dest: /tmp
     copy: no
-    creates: "/tmp/ripgrep-14.0.3-x86_64-unknown-linux-musl/rg"
-  when: ("ripgrep 14.0.3" not in rg_version.stdout) and (ansible_architecture == "x86_64")
+    creates: "/tmp/ripgrep-14.1.0-x86_64-unknown-linux-musl/rg"
+  when: ("ripgrep 14.1.0" not in rg_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Set Ripgrep ownership
-  file: dest=/tmp/ripgrep-14.0.3-{{ansible_architecture}}-unknown-linux-musl/rg mode=a+x group={{user}} owner={{user}}
-  when: ("ripgrep 14.0.3" not in rg_version.stdout) and (ansible_architecture == "x86_64")
+  file: dest=/tmp/ripgrep-14.1.0-{{ansible_architecture}}-unknown-linux-musl/rg mode=a+x group={{user}} owner={{user}}
+  when: ("ripgrep 14.1.0" not in rg_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Install RipGrep to user {{user}} ~/.local/bin
-  command: mv -f /tmp/ripgrep-14.0.3-{{ansible_architecture}}-unknown-linux-musl/rg /home/{{user}}/.local/bin/rg
-  when: ("ripgrep 14.0.3" not in rg_version.stdout) and (ansible_architecture == "x86_64")
+  command: mv -f /tmp/ripgrep-14.1.0-{{ansible_architecture}}-unknown-linux-musl/rg "{{homedir}}/.local/bin/rg"
+  when: ("ripgrep 14.1.0" not in rg_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Check if buf build 1.28.1 is installed
-  shell: /home/{{user}}/.local/bin/buf --version
+  shell: "{{homedir}}/.local/bin/buf --version"
   register: buf_version
   failed_when: false
   changed_when: false
@@ -171,13 +181,13 @@
 - name: Download buf build into ~/.local/bin/buf
   get_url: 
     url: https://github.com/bufbuild/buf/releases/download/v1.28.1/buf-Linux-{{ansible_architecture}}
-    dest: /home/{{user}}/.local/bin/buf
+    dest: "{{homedir}}/.local/bin/buf"
     mode: 0755
     force: true
   when: ("1.28.1" not in buf_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Check if git-delta 0.16.5 is installed
-  shell: /home/{{user}}/.local/bin/delta -V
+  shell: "{{homedir}}/.local/bin/delta -V"
   register: delta_version
   failed_when: false
   changed_when: false
@@ -202,11 +212,11 @@
   when: ("delta 0.16.5" not in delta_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Install git-delta to user {{user}} ~/.local/bin
-  command: mv -f /tmp/delta-0.16.5-{{ansible_architecture}}-unknown-linux-musl/delta /home/{{user}}/.local/bin/delta
+  command: mv -f /tmp/delta-0.16.5-{{ansible_architecture}}-unknown-linux-musl/delta "{{homedir}}/.local/bin/delta"
   when: ("delta 0.16.5" not in delta_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Check if direnv 2.33.0 is installed
-  shell: /home/{{user}}/.local/bin/direnv version
+  shell: "{{homedir}}/.local/bin/direnv version"
   register: direnv_version
   failed_when: false
   changed_when: false
@@ -214,16 +224,16 @@
 - name: Download direnv 2.33.0
   get_url:
     url: https://github.com/direnv/direnv/releases/download/v2.33.0/direnv.linux-amd64
-    dest: /home/{{user}}/.local/bin/direnv
+    dest: "{{homedir}}/.local/bin/direnv"
     force: true
   when: ("2.33.0" not in direnv_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Enable direnv
-  file: dest=/home/{{user}}/.local/bin/direnv mode=a+x group={{user}} owner={{user}}
+  file: dest="{{homedir}}/.local/bin/direnv" mode=a+x group={{user}} owner={{user}}
   when: ("2.33.0" not in direnv_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Check if grv 0.3.2 is installed
-  shell: /home/{{user}}/.local/bin/grv -version
+  shell: "{{homedir}}/.local/bin/grv -version"
   register: grv_version
   failed_when: false
   changed_when: false
@@ -231,16 +241,16 @@
 - name: Download grv 0.3.2
   get_url:
     url: https://github.com/rgburke/grv/releases/download/v0.3.2/grv_v0.3.2_linux64
-    dest: /home/{{user}}/.local/bin/grv
+    dest: "{{homedir}}/.local/bin/grv"
     force: true
   when: ("0.3.2" not in grv_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Enable grv
-  file: dest=/home/{{user}}/.local/bin/grv mode=a+x group={{user}} owner={{user}}
+  file: dest="{{homedir}}/.local/bin/grv" mode=a+x group={{user}} owner={{user}}
   when: ("0.3.2" not in grv_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Check if grpcurl 1.8.9 is installed
-  shell: /home/{{user}}/.local/bin/grpcurl -version
+  shell: "{{homedir}}/.local/bin/grpcurl -version"
   register: grpc_version
   failed_when: false
   changed_when: false
@@ -265,11 +275,11 @@
   when: ("1.8.9" not in grpc_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Install grpcurl to user {{user}} ~/.local/bin
-  command: mv -f /tmp/grpcurl /home/{{user}}/.local/bin/grpcurl
+  command: mv -f /tmp/grpcurl "{{homedir}}/.local/bin/grpcurl"
   when: ("1.8.9" not in grpc_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Check if golangci-lint 1.55.2 is installed
-  shell: /home/{{user}}/.local/bin/golangci-lint --version
+  shell: "{{homedir}}/.local/bin/golangci-lint --version"
   register: golangci_lint_version
   failed_when: false
   changed_when: false
@@ -294,7 +304,7 @@
   when: ("1.55.2" not in golangci_lint_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Install golangci-lint to user {{user}} ~/.local/bin
-  command: mv -f /tmp/golangci-lint-1.55.2-linux-amd64/golangci-lint /home/{{user}}/.local/bin/golangci-lint
+  command: mv -f /tmp/golangci-lint-1.55.2-linux-amd64/golangci-lint "{{homedir}}/.local/bin/golangci-lint"
   when: ("1.55.2" not in golangci_lint_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Install dev tooling

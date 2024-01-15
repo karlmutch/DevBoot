@@ -47,6 +47,19 @@
   become: true
   shell: /usr/sbin/update-ca-certificates -f
 
+- name: Get users homedir
+  local_action: command echo ~{{ user }}
+  register: home_output
+
+- set_fact:
+    homedir: "{{ home_output.stdout }}"
+
+- name: Creates users .local/bin directory
+  file:
+    dest: "{{homedir}}/.local/bin"
+    state: directory
+    recurse: yes
+
 - name: Load available groups
   shell: /usr/bin/getent group | awk -F":" '{print $1}'
   register: etc_groups
@@ -120,7 +133,7 @@
   when: ansible_architecture == "x86_64" and ansible_distribution != "Ubuntu" and bare_metal_linux
 
 - name: Check if kubespy v0.6.2 is installed
-  shell: /home/{{user}}/.local/bin/kubespy version
+  shell: "{{homedir}}/.local/bin/kubespy version"
   register: kubespy_version
   failed_when: false
   changed_when: false
@@ -158,13 +171,8 @@
   file: dest=/tmp/kubespy/kubespy mode=a+x group={{user}} owner={{user}}
   when: ("v0.6.2" not in kubespy_version.stdout) and (ansible_architecture == "x86_64")
 
-- name: Create ~/.local/bin directory
-  file:
-    path: /home/{{user}}/.local/bin
-    state: directory
-
 - name: Install kubespy to user {{user}} ~/.local/bin
-  command: mv -f /tmp/kubespy/kubespy /home/{{user}}/.local/bin/kubespy
+  command: mv -f /tmp/kubespy/kubespy "{{homedir}}/.local/bin/kubespy"
   when: ("v0.6.2" not in kubespy_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Clean kubespy artifact path

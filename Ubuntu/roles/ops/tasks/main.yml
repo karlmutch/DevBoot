@@ -24,6 +24,19 @@
   set_fact:
     bare_metal_linux: "{{ true if not ( WSL.failed or WSL.rc == 1 ) and not (OrbStackTest.failed or OrbStackTest.rc == 1) }}"
 
+- name: Get users homedir
+  local_action: command echo ~{{ user }}
+  register: home_output
+
+- set_fact:
+    homedir: "{{ home_output.stdout }}"
+
+- name: Creates users .local directory
+  file:
+    dest: "{{homedir}}/.local/bin"
+    state: directory
+    recurse: yes
+
 
 - name: read vars
   include_vars: '{{ item }}'
@@ -438,7 +451,7 @@
 - name: Check if krew is installed
   shell: kubectl krew version
   environment:
-      PATH: '{{ ansible_env.PATH }}:/home/{{ ansible_env.SUDO_USER }}/.krew/bin'
+      PATH: '{{ ansible_env.PATH }}:{{ homedir }}/.krew/bin'
   register: krew_version
   failed_when: false
   changed_when: false
@@ -496,7 +509,7 @@
 - name: Check krew version installed
   command: kubectl krew version
   environment:
-      PATH: '{{ ansible_env.PATH }}:/home/{{ user }}/.krew/bin'
+      PATH: '{{ ansible_env.PATH }}:{{ homedir }}/.krew/bin'
   register: krew_version
   failed_when: false
   changed_when: false
@@ -504,7 +517,7 @@
 - name: Upgrade krew plugin
   shell: kubectl krew upgrade
   environment:
-      PATH: '{{ ansible_env.PATH }}:/home/{{ user }}/.krew/bin'
+      PATH: '{{ ansible_env.PATH }}:{{ homedir }}/.krew/bin'
   register: upgrade_krew
   ignore_errors: yes
   when: (("unknown command" in krew_version.stderr) or ("v0.4.2" not in krew_version.stdout)) and ansible_architecture == "x86_64"
@@ -515,6 +528,6 @@
 - name: Update krew index
   command: kubectl krew update
   environment:
-      PATH: '{{ ansible_env.PATH }}:/home/{{ user }}/.krew/bin'
+      PATH: '{{ ansible_env.PATH }}:{{ homedir }}/.krew/bin'
   ignore_errors: True
   when: ansible_architecture == "x86_64"

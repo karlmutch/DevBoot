@@ -7,4 +7,5 @@
 #13.77.166.171 ansible_connection=ssh       ansible_user=kmutch
 #34.218.195.166 ansible_connection=ssh       ansible_user=kmutch
 #studio2 ansible_connection=ssh       ansible_user=kmutch
-development@orb ansible_connection=ssh       ansible_user=karlmutch
+#development@orb ansible_connection=ssh       ansible_user=karlmutch
+workstation-karl.internal.dev.cynch-ai.com ansible_connection=ssh       ansible_user=karl
