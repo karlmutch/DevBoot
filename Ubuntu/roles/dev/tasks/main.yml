@@ -313,6 +313,8 @@
     state: present
   vars:
     items:
+    - mandoc
+    - groff
     - git-extras
     - autoconf 
     - automake 
