@@ -31,12 +31,17 @@
 - set_fact:
     homedir: "{{ home_output.stdout }}"
 
+- name: Debug user details
+  ansible.builtin.debug:
+    msg: "{{ homedir }} and user {{ user }}"
+
 - name: Creates users .local directory
   file:
     dest: "{{homedir}}/.local/bin"
     state: directory
     recurse: yes
-
+    owner: "{{user}}"
+    group: "{{user}}"
 
 - name: read vars
   include_vars: '{{ item }}'
