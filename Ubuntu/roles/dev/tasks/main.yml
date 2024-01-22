@@ -79,6 +79,35 @@
   args:
     creates: "{{homedir}}/.local/bin/dagger"
 
+- name: Download mise installer
+  get_url:
+    url: https://mise.jdx.dev/install.sh
+    dest: /tmp/mise.sh
+    mode: '+x'
+
+- name: Install mise from script
+  command: 
+    cmd: sh /tmp/mise.sh
+    chdir: "{{homedir}}/.local"
+  args:
+    creates: "{{homedir}}/.local/bin/mise"
+
+- name: zprofile inititalization
+  ansible.builtin.file:
+    path: "{{homedir}}/.zprofile"
+    owner: "{{user}}"
+    group: "{{user}}"
+    mode: '0700'
+    state: touch
+
+- name: Set zsh profile lines
+  lineinfile:
+    dest: "{{homedir}}/.zprofile"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+    - { regexp: '$HOME/.local/share/mise/shims', line: 'export PATH="$HOME/.local/share/mise/shims:$PATH"' }
+
 - name: Add JSon processing repos
   apt_repository: repo=ppa:duggan/jo update_cache=yes
   when: (ansible_architecture == "x86_64") and  (ansible_distribution != "Ubuntu") and (ansible_distribution_major_version != "18")
