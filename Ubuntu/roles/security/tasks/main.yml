@@ -4,8 +4,6 @@
   register: WSL
   ignore_errors: True
   no_log: True
-  args:
-      warn: False
 
 # An rc of 0 means the text was found
 - name: Test OS for OrbStack
@@ -13,12 +11,10 @@
   register: OrbStack
   ignore_errors: True
   no_log: True
-  args:
-      warn: False
 
 - name: Evaluate of this is likely to be a pure Linux system that will use its own docker
   set_fact:
-    bare_metal_linux: "{{ true if not ( WSL.failed or WSL.rc == 1 ) and not (OrbStack.failed or OrbStack.rc == 1) }}"
+    bare_metal_linux: "{{ true if ( WSL.failed or WSL.rc == 1 ) and (OrbStack.failed or OrbStack.rc == 1) }}"
 
 - name: Change sudo group to not need passwords
   lineinfile: 

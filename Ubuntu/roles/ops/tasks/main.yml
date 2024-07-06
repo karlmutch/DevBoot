@@ -4,8 +4,6 @@
   register: WSL
   ignore_errors: True
   no_log: True
-  args:
-      warn: False
 
 # An rc of 0 means the text was found
 - name: Test OS for OrbStack
@@ -13,8 +11,6 @@
   register: OrbStackTest
   ignore_errors: True
   no_log: True
-  args:
-      warn: False
 
 - name: Evaluate of this is an OrbStack system that does not need certain tools
   set_fact:
@@ -22,7 +18,7 @@
 
 - name: Evaluate of this is likely to be a pure Linux system that will use its own docker
   set_fact:
-    bare_metal_linux: "{{ true if not ( WSL.failed or WSL.rc == 1 ) and not (OrbStackTest.failed or OrbStackTest.rc == 1) }}"
+    bare_metal_linux: "{{ true if ( WSL.failed or WSL.rc == 1 ) and (OrbStackTest.failed or OrbStackTest.rc == 1) }}"
 
 
 - name: read vars
@@ -119,7 +115,7 @@
       - rxvt-unicode-256color
     state: latest
     update_cache: true
-  when: ansible_architecture == "x86_64" and (ansible_distribution == "Ubuntu") and ( ansible_distribution_major_version | int < 23)
+  when: ansible_architecture == "x86_64" and (ansible_distribution == "Ubuntu") and ( ansible_distribution_major_version | int < 22)
 
 - ansible.builtin.apt:
     clean: yes
@@ -211,131 +207,91 @@
     classic: yes
   when: ansible_architecture == "x86_64" and ansible_distribution == "Ubuntu" and bare_metal_linux
 
-- name: Check if lnav 0.11.2 is installed
+- name: Check if lnav 0.12.2 is installed
   shell: lnav -V
   register: lnav_version
   failed_when: false
   changed_when: false
 
-- name: Download lnav at version 0.11.2
+- name: Download lnav at version 0.12.2
   get_url:
-    url: "https://github.com/tstack/lnav/releases/download/v0.11.2/lnav-0.11.2-{{ ansible_architecture }}-linux-musl.zip"
+    url: "https://github.com/tstack/lnav/releases/download/v0.12.2/lnav-0.12.2-linux-musl-{{ ansible_architecture }}.zip"
     dest: "/tmp/lnav-linux-64bit.zip"
-  when: ("lnav 0.11.2" not in lnav_version.stdout) and ansible_architecture == "x86_64"
+    force: true
+  when: ("lnav 0.12.2" not in lnav_version.stdout) and ansible_architecture == "x86_64"
 
 - name: Extract lnav archive at version 0.10.1
   unarchive: 
     src: /tmp/lnav-linux-64bit.zip
     dest: /tmp 
     copy: no
-  when: ("lnav 0.11.2" not in lnav_version.stdout) and ansible_architecture == "x86_64"
+  when: ("lnav 0.12.2" not in lnav_version.stdout) and ansible_architecture == "x86_64"
 
-- name: Copy extracted lnav 0.11.2 executable to /usr/local/bin
-  command: mv -f /tmp/lnav-0.11.2/lnav /usr/local/bin/lnav
-  when: ("lnav 0.11.2" not in lnav_version.stdout) and ansible_architecture == "x86_64"
+- name: Copy extracted lnav 0.12.2 executable to /usr/local/bin
+  command: mv -f /tmp/lnav-0.12.2/lnav /usr/local/bin/lnav
+  when: ("lnav 0.12.2" not in lnav_version.stdout) and ansible_architecture == "x86_64"
 
-- name: Check if eza 0.16.3 is installed
+- name: Check if eza 0.18.21 is installed
   shell: eza --version
   register: eza_version
   failed_when: false
   changed_when: false
 
-- name: Download Rust based eza 0.16.3
+- name: Download Rust based eza 0.18.21
   get_url:
-    url: "https://github.com/eza-community/eza/releases/download/v0.16.3/eza_{{ ansible_architecture }}-unknown-linux-musl.zip"
+    url: "https://github.com/eza-community/eza/releases/download/v0.18.21/eza_{{ ansible_architecture }}-unknown-linux-musl.zip"
     dest: "/tmp/eza.zip"
     force: yes
-  when: ("0.16.3" not in eza_version.stdout) and ansible_architecture == "x86_64"
+  when: ("0.18.21" not in eza_version.stdout) and ansible_architecture == "x86_64"
 
 - name: Create Rust based eza installation directory
   file:
     path: /tmp/eza-linux-{{ ansible_architecture }}
     state: directory
-  when: ("0.16.3" not in eza_version.stdout) and ansible_architecture == "x86_64"
+  when: ("0.18.21" not in eza_version.stdout) and ansible_architecture == "x86_64"
 
-- name: Extract eza version 0.16.3
+- name: Extract eza version 0.18.21
   unarchive: src=/tmp/eza.zip dest=/tmp/eza-linux-x86_64 copy=no creates=/tmp/eza-linux-{{ ansible_architecture }}/eza
-  when: ("0.16.3" not in eza_version.stdout) and ansible_architecture == "x86_64"
+  when: ("0.18.21" not in eza_version.stdout) and ansible_architecture == "x86_64"
 
 - name: Copy extracted eza executable to /usr/local/bin
   command: mv /tmp/eza-linux-{{ ansible_architecture }}/eza /usr/local/bin/eza
-  when: ("0.16.3" not in eza_version.stdout) and ansible_architecture == "x86_64"
+  when: ("0.18.21" not in eza_version.stdout) and ansible_architecture == "x86_64"
 
 - name: Make Rust based eza executable
   file: path=/usr/local/bin/eza mode="u+x,g+x,o+x"
-  when: ("0.16.3" not in eza_version.stdout) and ansible_architecture == "x86_64"
+  when: ("0.18.21" not in eza_version.stdout) and ansible_architecture == "x86_64"
 
 - name: Remove Rust based eza installation directory
   file:
     path: /tmp/eza-linux-{{ ansible_architecture }}
     state: absent
-  when: ("0.16.3" not in eza_version.stdout) and ansible_architecture == "x86_64"
+  when: ("0.18.21" not in eza_version.stdout) and ansible_architecture == "x86_64"
 
-- name: Check if fd 8.7.1 is installed
+- name: Check if fd 10.1.0 is installed
   shell: fd --version
   register: fd_version
   failed_when: false
   changed_when: false
 
-- name: Download Rust based fd 8.7.1
+- name: Download Rust based fd 10.1.0
   get_url:
-    url: "https://github.com/sharkdp/fd/releases/download/v8.7.1/fd-v8.7.1-{{ ansible_architecture }}-unknown-linux-musl.tar.gz"
+    url: "https://github.com/sharkdp/fd/releases/download/v10.1.0/fd-v10.1.0-{{ ansible_architecture }}-unknown-linux-musl.tar.gz"
     dest: "/tmp/fd.tar.gz"
     force: yes
-  when: ("fd 8.7.1" not in fd_version.stdout) and ansible_architecture == "x86_64"
+  when: ("fd 10.1.0" not in fd_version.stdout) and ansible_architecture == "x86_64"
 
-- name: Extract fd version 8.7.1
-  unarchive: src=/tmp/fd.tar.gz dest=/tmp copy=no creates=/tmp/fd-v8.7.1-{{ ansible_architecture }}-unknown-linux-musl
-  when: ("fd 8.7.1" not in fd_version.stdout) and ansible_architecture == "x86_64"
+- name: Extract fd version 10.1.0
+  unarchive: src=/tmp/fd.tar.gz dest=/tmp copy=no creates=/tmp/fd-v10.1.0-{{ ansible_architecture }}-unknown-linux-musl
+  when: ("fd 10.1.0" not in fd_version.stdout) and ansible_architecture == "x86_64"
 
 - name: Copy extracted fd executable to /usr/local/bin
-  command: mv /tmp/fd-v8.7.1-{{ ansible_architecture }}-unknown-linux-musl/fd /usr/local/bin/fd
-  when: ("fd 8.7.1" not in fd_version.stdout) and ansible_architecture == "x86_64"
+  command: mv /tmp/fd-v10.1.0-{{ ansible_architecture }}-unknown-linux-musl/fd /usr/local/bin/fd
+  when: ("fd 10.1.0" not in fd_version.stdout) and ansible_architecture == "x86_64"
 
 - name: Make Rust based fd executable
   file: path=/usr/local/bin/fd mode="u+x,g+x,o+x"
-  when: ("fd 8.7.1" not in fd_version.stdout) and ansible_architecture == "x86_64"
-
-- name: Check if sift 0.9.0 is installed
-  shell: sift --version
-  register: sift_version
-  failed_when: false
-  changed_when: false
-
-- name: Download sift 0.9.0
-  get_url: 
-    url: "https://sift-tool.org/downloads/sift/sift_0.9.0_linux_amd64.tar.gz"
-    dest: "/tmp/sift.tar.gz"
-    force: true
-  when: ("sift 0.9.0" not in sift_version.stdout) and ansible_architecture == "x86_64"
-
-- name: Extract sift version 0.9.0
-  unarchive: 
-    src: /tmp/sift.tar.gz
-    dest: /tmp
-    copy: no
-  when: ("sift 0.9.0" not in sift_version.stdout) and ansible_architecture == "x86_64"
-
-- name: Copy extracted sift executable to /usr/local/bin
-  command: mv -f /tmp/sift_0.9.0_linux_amd64/sift /usr/local/bin/sift
-  when: ("sift 0.9.0" not in sift_version.stdout) and ansible_architecture == "x86_64"
-
-#- name: Check if atom is installed
-#  command: dpkg-query -W atom
-#  register: atom_check_debs
-#  failed_when: atom_check_deb.rc > 1
-#  changed_when: atom_check_deb.rc == 1
-
-#- name: Download Atom
-#  get_url: 
-#    url="https://github.com/atom/atom/releases/download/v1.8.0/atom-amd64.deb"
-#    dest="/tmp/atom-amd64.deb"
-#  when: atom_check_deb.rc == 1
-
-#- name: Install Atom
-#  apt: deb="/tmp/atom-amd64.deb"
-#  become: true
-#  when: atom_check_deb.rc == 1
+  when: ("fd 10.1.0" not in fd_version.stdout) and ansible_architecture == "x86_64"
 
 - name: Check if awscli 2.4.7 is installed
   shell: aws --version
@@ -369,46 +325,46 @@
     state: absent
   when: ("2.4.7" not in aws_version.stdout) and ansible_architecture == "x86_64"
 
-- name: Check if eksctl 0.77.0 is installed
+- name: Check if eksctl 0.184.0 is installed
   shell: eksctl version
   register: eksctl_version
   failed_when: false
   changed_when: false
 
-- name: Download eksctl 0.77.0
+- name: Download eksctl 0.184.0
   get_url:
-    url: "https://github.com/weaveworks/eksctl/releases/download/v0.77.0/eksctl_{{ shell_uname_result.stdout }}_amd64.tar.gz"
+    url: "https://github.com/weaveworks/eksctl/releases/download/v0.184.0/eksctl_{{ shell_uname_result.stdout }}_amd64.tar.gz"
     dest: /tmp/eksctl.tar.gz
     owner: root
     group: root
     mode: 0666
     force: yes
-  when: ("0.77.0" not in eksctl_version.stdout) and ansible_architecture == "x86_64"
+  when: ("0.184.0" not in eksctl_version.stdout) and ansible_architecture == "x86_64"
 
-- name: Extract eksctl version 0.77.0
+- name: Extract eksctl version 0.184.0
   unarchive: src=/tmp/eksctl.tar.gz dest=/tmp copy=no creates=/tmp/eksctl
-  when: ("0.77.0" not in eksctl_version.stdout) and ansible_architecture == "x86_64"
+  when: ("0.184.0" not in eksctl_version.stdout) and ansible_architecture == "x86_64"
 
 - name: Copy extracted eksctl executable to /usr/local/bin
   command: mv /tmp/eksctl /usr/local/bin/eksctl
-  when: ("0.77.0" not in eksctl_version.stdout) and ansible_architecture == "x86_64"
+  when: ("0.184.0" not in eksctl_version.stdout) and ansible_architecture == "x86_64"
 
-- name: Check if kops 1.22.2 is installed
+- name: Check if kops 1.29.0 is installed
   shell: kops version
   register: kops_version
   failed_when: false
   changed_when: false
 
-- name: Download kops 1.22.2
+- name: Download kops 1.29.0
   get_url: 
-    url: "https://github.com/kubernetes/kops/releases/download/v1.22.2/kops-{{ shell_uname_result.stdout }}-amd64"
+    url: "https://github.com/kubernetes/kops/releases/download/v1.29.0/kops-{{ shell_uname_result.stdout }}-amd64"
 
     dest: /usr/local/bin/kops
     owner: root
     group: root
     mode: 0755
     force: yes
-  when: ("Version 1.22.2 " not in kops_version.stdout) and ansible_architecture == "x86_64"
+  when: ("Version 1.29.0 " not in kops_version.stdout) and ansible_architecture == "x86_64"
 
 - name: Check if kustomize 5.3.0 installed
   shell: kustomize version
@@ -434,87 +390,3 @@
 - name: Make kustomize executable
   file: path=/usr/local/bin/kustomize mode="u+x,g+x,o+x"
   when: ("5.3.0 " not in kustomize_version.stdout) and ansible_architecture == "x86_64"
-
-- name: Check if krew is installed
-  shell: kubectl krew version
-  environment:
-      PATH: '{{ ansible_env.PATH }}:/home/{{ ansible_env.SUDO_USER }}/.krew/bin'
-  register: krew_version
-  failed_when: false
-  changed_when: false
-
-
-- name: Evaluate of this is likely to be a pure Linux system that will use its own docker
-  set_fact:
-    missing_krew: "{{ true if ( krew_version.failed or krew_version.rc == 1 or 'unknown command' in krew_version.stderr) }}"
-
-- name: create temporary krew install directory
-  tempfile:
-    state: directory
-    suffix: _krew_installer
-  register: krew_temp
-  when: (missing_krew or ("v0.4.2" not in krew_version.stdout)) and ansible_architecture == "x86_64"
-
-
-- name: Download krew 0.4.2
-  shell:
-    cmd: curl -fsSLO "https://github.com/kubernetes-sigs/krew/releases/latest/download/krew{-{{ shell_uname_result.stdout }}_amd64.tar.gz,.yaml}"
-    chdir: "{{ krew_temp.path }}"
-  when: (missing_krew or ("v0.4.2" not in krew_version.stdout)) and ansible_architecture == "x86_64"
-
-- name: Extract krew installer
-  unarchive: 
-    src={{ krew_temp.path }}/krew-{{ shell_uname_result.stdout }}_amd64.tar.gz
-    dest={{ krew_temp.path }}
-    copy=no
-  when: (missing_krew or ("v0.4.2" not in krew_version.stdout)) and ansible_architecture == "x86_64"
-
-- name: Modify temp directory permissions to allow user installation of krew
-  ansible.builtin.file:
-    path: "{{ krew_temp.path }}"
-    state: directory
-    mode: '0755'
-
-- name: Install krew 0.4.2 from tar archive
-  shell:
-    cmd: ./krew-{{ shell_uname_exec_result.stdout }}_amd64 install krew
-    chdir: "{{ krew_temp.path }}"
-  when: (missing_krew or ("v0.4.2" not in krew_version.stdout)) and ansible_architecture == "x86_64"
-
-- name: Update krew index using installer
-  shell:
-    cmd: ./krew-{{ shell_uname_exec_result.stdout }}_amd64 update
-    chdir: "{{ krew_temp.path }}"
-  when: (missing_krew or ("v0.4.2" not in krew_version.stdout)) and ansible_architecture == "x86_64"
-
-#- name: Remove the temporary krew directory
-#  file:
-#    path: "{{ krew_temp.path }}"
-#    state: absent
-#  when: (missing_krew or ("v0.4.2" not in krew_version.stdout)) and ansible_architecture == "x86_64"
-
-- name: Check krew version installed
-  command: kubectl krew version
-  environment:
-      PATH: '{{ ansible_env.PATH }}:/home/{{ user }}/.krew/bin'
-  register: krew_version
-  failed_when: false
-  changed_when: false
-
-- name: Upgrade krew plugin
-  shell: kubectl krew upgrade
-  environment:
-      PATH: '{{ ansible_env.PATH }}:/home/{{ user }}/.krew/bin'
-  register: upgrade_krew
-  ignore_errors: yes
-  when: (("unknown command" in krew_version.stderr) or ("v0.4.2" not in krew_version.stdout)) and ansible_architecture == "x86_64"
-
-- fail: msg="{{ upgrade_krew }}"
-  when: ('the newest version is already installed' not in upgrade_krew) and ('it is already on the newest version' not in upgrade_krew.stderr) and ("v0.4.2" not in krew_version.stdout) and ansible_architecture == "x86_64"
-
-- name: Update krew index
-  command: kubectl krew update
-  environment:
-      PATH: '{{ ansible_env.PATH }}:/home/{{ user }}/.krew/bin'
-  ignore_errors: True
-  when: ansible_architecture == "x86_64"

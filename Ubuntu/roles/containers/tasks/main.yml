@@ -4,8 +4,6 @@
   register: WSL
   ignore_errors: True
   no_log: True
-  args:
-      warn: False
 
 # An rc of 0 means the text was found
 - name: Test OS for OrbStack
@@ -13,12 +11,14 @@
   register: OrbStack
   ignore_errors: True
   no_log: True
-  args:
-      warn: False
 
 - name: Evaluate of this is likely to be a pure Linux system that will use its own docker
   set_fact:
-    bare_metal_linux: "{{ true if not ( WSL.failed or WSL.rc == 1 ) and not (OrbStack.failed or OrbStack.rc == 1) }}"
+    bare_metal_linux: "{{ true if ( WSL.failed or WSL.rc == 1 ) and (OrbStack.failed or OrbStack.rc == 1) }}"
+
+- name: Print Bare metal
+  ansible.builtin.debug:
+    msg: "Bare metal {{bare_metal_linux}} {{ ansible_architecture }} {{ ansible_distribution }}"
 
 # An rc of 0 means the text was found
 - name: Install general certs
@@ -172,7 +172,3 @@
     state: absent
     path: "/tmp/kubespy"
   when: ("v0.6.2" not in kubespy_version.stdout) and (ansible_architecture == "x86_64")
-
-- name: Print the architecture
-  ansible.builtin.debug:
-    msg: Architecture {{ ansible_architecture }}

@@ -1,6 +1,6 @@
 - name: Provisioning for a Polyglot Developer machine
   become: yes
-  hosts: all, localhost
+  hosts: all
   remote_user: root
 
   roles:
