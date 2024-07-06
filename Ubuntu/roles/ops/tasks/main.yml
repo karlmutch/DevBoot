@@ -20,6 +20,24 @@
   set_fact:
     bare_metal_linux: "{{ true if ( WSL.failed or WSL.rc == 1 ) and (OrbStackTest.failed or OrbStackTest.rc == 1) }}"
 
+- name: Get users homedir
+  local_action: command echo ~{{ user }}
+  register: home_output
+
+- set_fact:
+    homedir: "{{ home_output.stdout }}"
+
+- name: Debug user details
+  ansible.builtin.debug:
+    msg: "{{ homedir }} and user {{ user }}"
+
+- name: Creates users .local directory
+  file:
+    dest: "{{homedir}}/.local/bin"
+    state: directory
+    recurse: yes
+    owner: "{{user}}"
+    group: "{{user}}"
 
 - name: read vars
   include_vars: '{{ item }}'
