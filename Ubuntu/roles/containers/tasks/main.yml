@@ -50,6 +50,7 @@
 - name: Get users homedir
   local_action: command echo ~{{ user }}
   register: home_output
+  become: false
 
 - set_fact:
     homedir: "{{ home_output.stdout }}"
