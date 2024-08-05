@@ -67,7 +67,11 @@
 
 - name: Add the docker group
   group: name=docker gid=998 state=present
-  when: bare_metal_linux
+  when: bare_metal_linux and ansible_architecture == "x86_64" and (ansible_distribution == "Ubuntu") and ( ansible_distribution_major_version | int < 24)
+
+- name: Add the docker group
+  group: name=docker gid=890 state=present
+  when: bare_metal_linux and ansible_architecture == "x86_64" and (ansible_distribution == "Ubuntu") and ( ansible_distribution_major_version | int >= 24)
 
 # Using apt-key within the ansible python code breaks on Ubuntu 14.04 due to openssl package dependencies breaking
 - name: Add Docker GPG key

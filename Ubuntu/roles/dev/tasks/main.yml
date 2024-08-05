@@ -54,7 +54,7 @@
     - gh
 
 - name: Get users homedir
-  local_action: command echo ~{{ user }}
+  command: echo ~{{ user }}
   register: home_output
 
 - set_fact:

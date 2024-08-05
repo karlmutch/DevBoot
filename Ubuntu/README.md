@@ -2,6 +2,10 @@ For installation instructions related to ansible please use the information
 found at https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#installing-ansible-on-ubuntu.
 The main prerequisite for ansible is that python be installed on the Linux systems.
 
+```sh
+ansible-galaxy collection install community.general
+```
+
 You may also need to configure SSHD for your machine.
 
 ```sh
