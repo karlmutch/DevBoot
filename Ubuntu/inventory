@@ -11,3 +11,5 @@
 #100.82.235.48 ansible_connection=ssh       ansible_user=karl
 #100.93.11.24 ansible_connection=ssh       ansible_user=karl
 100.127.201.62 ansible_connection=ssh       ansible_user=kmutch
+# Ubuntu 18.10 Test Instance
+ec2-52-12-191-16.us-west-2.compute.amazonaws.com ansible_connection=ssh       ansible_user=ubuntu ansible_ssh_common_args="-i /home/kmutch/.ssh/gitbroker.pem"

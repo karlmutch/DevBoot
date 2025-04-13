@@ -1,3 +1,4 @@
 playbook.retry
 Ubuntu/*.retry
 .envrc
+.secret-git-config
