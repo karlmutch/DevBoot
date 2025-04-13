@@ -36,21 +36,21 @@
 - name: Load available groups
   shell: /usr/bin/getent group | awk -F":" '{print $1}'
   register: etc_groups
-  when: WSL.rc == 1
+  when: WSL.failed or (WSL.rc == 1) 
 
 - name: Add the docker group
   group: name=docker gid=998 state=present
-  when: 'WSL.rc == 1 and "docker" not in etc_groups.stdout_lines'
+  when: '(WSL.failed or WSL.rc == 1) and "docker" not in etc_groups.stdout_lines'
 
 # Using apt-key within the ansible python code breaks on Ubuntu 14.04 due to openssl package dependencies breaking
 - name: Add Docker GPG key
   command: bash -lc "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -"
-  when: ansible_architecture == "x86_64" and ansible_distribution != "Ubuntu" and WSL.rc == 1
+  when: ansible_architecture == "x86_64" and ansible_distribution != "Ubuntu" and (WSL.failed or WSL.rc == 1)
 
 - name: Add Docker APT repository
   apt_repository:
     repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ansible_distribution_release}} stable
-  when: ansible_architecture == "x86_64" and ansible_distribution != "Ubuntu" and WSL.rc == 1
+  when: ansible_architecture == "x86_64" and ansible_distribution != "Ubuntu" and (WSL.failed or WSL.rc == 1)
 
 - name: Install Docker CE and it dependencies
   apt:
@@ -63,24 +63,24 @@
     - docker-ce
     - docker-ce-cli 
     - containerd.io
-  when: ansible_architecture == "x86_64" and ansible_distribution != "Ubuntu" and WSL.rc == 1
+  when: ansible_architecture == "x86_64" and ansible_distribution != "Ubuntu" and (WSL.failed or WSL.rc == 1)
 
 
 - name: Install Ubuntu docker distribution
   snap:
     name: docker
     classic: yes
-  when: ansible_architecture == "x86_64" and ansible_distribution == "Ubuntu" and WSL.rc == 1
+  when: ansible_architecture == "x86_64" and ansible_distribution == "Ubuntu" and (WSL.failed or WSL.rc == 1)
 
 - name: Install the microk8s Kubernetes distribution
   snap:
     name: microk8s
     classic: yes
-  when: ansible_architecture == "x86_64" and ansible_distribution == "Ubuntu" and WSL.rc == 1
+  when: ansible_architecture == "x86_64" and ansible_distribution == "Ubuntu" and (WSL.failed or WSL.rc == 1)
 
 - name: Start Docker
   service: name=docker state=restarted
-  when: ansible_architecture == "x86_64" and ansible_distribution != "Ubuntu" and WSL.rc == 1
+  when: ansible_architecture == "x86_64" and ansible_distribution != "Ubuntu" and (WSL.failed or WSL.rc == 1)
 
 
 - name: Download trivy 0.16.0

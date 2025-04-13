@@ -36,9 +36,6 @@
 - name: set Ubuntu keyserver
   apt_key: keyserver=keyserver.ubuntu.com id=36A1D7869245C8950F966E92D8576A8BA88D21E9
 
-- name: github keyserver
-  apt_key: keyserver=keyserver.ubuntu.com id=C99B11DEB97541F0
-
 - name: Add Security repo and git toolsets ubuntu repositories
   apt_repository: repo='{{ item }}' update_cache=yes
   with_items:
@@ -46,6 +43,7 @@
     - ppa:brightbox/ruby-ng
     - deb https://cli.github.com/packages {{ansible_distribution_release}} main
     - ppa:bashtop-monitor/bashtop
+  when: (ansible_architecture == "x86_64") and  (ansible_distribution != "Ubuntu") and (ansible_distribution_major_version != "24")
 
 - name: Install github CLI
   apt: 
@@ -73,38 +71,38 @@
 - name: Create user ~/.local/bin directory
   file: path=/home/{{user}}/.local/bin state=directory group={{user}} owner={{user}}
 
-- name: Check if Go 1.16.6 is installed
+- name: Check if Go 1.24.2 is installed
   shell: /home/{{user}}/go/bin/go version
   register: go_version
   failed_when: false
   changed_when: false
 
-- name: Download Go 1.16.6
+- name: Download Go 1.24.2
   get_url:
-      url: https://storage.googleapis.com/golang/go1.16.6.linux-amd64.tar.gz
-      dest: /tmp/go1.16.6.linux-amd64.tar.gz
+      url: https://storage.googleapis.com/golang/go1.24.2.linux-amd64.tar.gz
+      dest: /tmp/go1.24.2.linux-amd64.tar.gz
       force: true
-  when: ("go1.16.6" not in go_version.stdout) and (ansible_architecture == "x86_64")
+  when: ("go1.24.2" not in go_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Clean artifact path
   file:
     state: absent
     path: "/home/{{user}}/go"
-  when: ("go1.16.6" not in go_version.stdout) and (ansible_architecture == "x86_64")
+  when: ("go1.24.2" not in go_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Check for clean go directory
   stat: 
       path: "/home/{{user}}/go"
   register: goPath
 
-- name: Install Go 1.16.6 locally for user {{user}}
+- name: Install Go 1.24.2 locally for user {{user}}
   unarchive:
-    src: /tmp/go1.16.6.linux-amd64.tar.gz
+    src: /tmp/go1.24.2.linux-amd64.tar.gz
     dest: "/home/{{user}}"
     group: "{{user}}"
     owner: "{{user}}"
     copy: no
-  when: not goPath.stat.exists and ("go1.16.6" not in go_version.stdout) and (ansible_architecture == "x86_64")
+  when: not goPath.stat.exists and ("go1.24.2" not in go_version.stdout) and (ansible_architecture == "x86_64")
 
 - sysctl:
     name: kernel.panic
@@ -122,7 +120,7 @@
     #group: root
     #mode: 0200
 
-- name: Check if RipGrep 13.0.0 is installed
+- name: Check if RipGrep 14.1.1 is installed
   shell: /home/{{user}}/.local/bin/rg -V
   register: rg_version
   failed_when: false
@@ -130,26 +128,26 @@
 
 - name: Download RipGrep
   get_url: 
-    url: https://github.com/BurntSushi/ripgrep/releases/download/13.0.0/ripgrep-13.0.0-x86_64-unknown-linux-musl.tar.gz
-    dest: /tmp/ripgrep-13.0.0-x86_64-unknown-linux-musl.tar.gz
+    url: https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-x86_64-unknown-linux-musl.tar.gz
+    dest: /tmp/ripgrep-14.1.1-x86_64-unknown-linux-musl.tar.gz
     force: true
-  when: ("ripgrep 13.0.0" not in rg_version.stdout) and (ansible_architecture == "x86_64")
+  when: ("ripgrep 14.1.1" not in rg_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Unpack RipGrep
   unarchive:
-    src: /tmp/ripgrep-13.0.0-x86_64-unknown-linux-musl.tar.gz
+    src: /tmp/ripgrep-14.1.1-x86_64-unknown-linux-musl.tar.gz
     dest: /tmp
     copy: no
-    creates: "/tmp/ripgrep-13.0.0-x86_64-unknown-linux-musl/rg"
-  when: ("ripgrep 13.0.0" not in rg_version.stdout) and (ansible_architecture == "x86_64")
+    creates: "/tmp/ripgrep-14.1.1-x86_64-unknown-linux-musl/rg"
+  when: ("ripgrep 14.1.1" not in rg_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Set Ripgrep ownership
-  file: dest=/tmp/ripgrep-13.0.0-x86_64-unknown-linux-musl/rg mode=a+x group={{user}} owner={{user}}
-  when: ("ripgrep 13.0.0" not in rg_version.stdout)
+  file: dest=/tmp/ripgrep-14.1.1-x86_64-unknown-linux-musl/rg mode=a+x group={{user}} owner={{user}}
+  when: ("ripgrep 14.1.1" not in rg_version.stdout)
 
 - name: Install RipGrep to user {{user}} ~/.local/bin
-  command: mv -f /tmp/ripgrep-13.0.0-x86_64-unknown-linux-musl/rg /home/{{user}}/.local/bin/rg
-  when: ("ripgrep 13.0.0" not in rg_version.stdout) and (ansible_architecture == "x86_64")
+  command: mv -f /tmp/ripgrep-14.1.1-x86_64-unknown-linux-musl/rg /home/{{user}}/.local/bin/rg
+  when: ("ripgrep 14.1.1" not in rg_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Check if git-delta 0.8.3 is installed
   shell: /home/{{user}}/.local/bin/delta -V
@@ -180,22 +178,22 @@
   command: mv -f /tmp/delta-0.8.3-x86_64-unknown-linux-musl/delta /home/{{user}}/.local/bin/delta
   when: ("delta 0.8.3" not in delta_version.stdout) and (ansible_architecture == "x86_64")
 
-- name: Check if direnv 2.28.0 is installed
+- name: Check if direnv 2.36.0 is installed
   shell: /home/{{user}}/.local/bin/direnv version
   register: direnv_version
   failed_when: false
   changed_when: false
 
-- name: Download direnv 2.28.0
+- name: Download direnv 2.36.0
   get_url:
-    url: https://github.com/direnv/direnv/releases/download/v2.28.0/direnv.linux-amd64
+    url: https://github.com/direnv/direnv/releases/download/v2.36.0/direnv.linux-amd64
     dest: /home/{{user}}/.local/bin/direnv
     force: true
-  when: ("2.28.0" not in direnv_version.stdout) and (ansible_architecture == "x86_64")
+  when: ("2.36.0" not in direnv_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Enable direnv
   file: dest=/home/{{user}}/.local/bin/direnv mode=a+x group={{user}} owner={{user}}
-  when: ("2.28.0" not in direnv_version.stdout) and (ansible_architecture == "x86_64")
+  when: ("2.36.0" not in direnv_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Check if grv 0.3.2 is installed
   shell: /home/{{user}}/.local/bin/grv -version
@@ -214,34 +212,34 @@
   file: dest=/home/{{user}}/.local/bin/grv mode=a+x group={{user}} owner={{user}}
   when: ("0.3.2" not in grv_version.stdout) and (ansible_architecture == "x86_64")
 
-- name: Check if golangci-lint 1.41.1 is installed
+- name: Check if golangci-lint 2.1.1 is installed
   shell: /home/{{user}}/.local/bin/golangci-lint --version
   register: golangci_lint_version
   failed_when: false
   changed_when: false
 
-- name: Download golangci-lint 1.41.1
+- name: Download golangci-lint 2.1.1
   get_url:
-    url: https://github.com/golangci/golangci-lint/releases/download/v1.41.1/golangci-lint-1.41.1-linux-amd64.tar.gz
+    url: https://github.com/golangci/golangci-lint/releases/download/v2.1.1/golangci-lint-2.1.1-linux-amd64.tar.gz
     dest: /tmp/golangci-lint-linux-amd64.tar.gz
     force: true
-  when: ("1.41.1" not in golangci_lint_version.stdout) and (ansible_architecture == "x86_64")
+  when: ("2.1.1" not in golangci_lint_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Unpack golangci-lint
   unarchive:
     src: /tmp/golangci-lint-linux-amd64.tar.gz
     dest: /tmp
     copy: no
-    creates: "/tmp/golangci-lint-1.41.1-linux-amd64/golangci-lint"
-  when: ("1.41.1" not in golangci_lint_version.stdout) and (ansible_architecture == "x86_64")
+    creates: "/tmp/golangci-lint-2.1.1-linux-amd64/golangci-lint"
+  when: ("2.1.1" not in golangci_lint_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Set golangci-lint ownership
-  file: dest=/tmp/golangci-lint-1.41.1-linux-amd64/golangci-lint mode=a+x group={{user}} owner={{user}}
-  when: ("1.41.1" not in golangci_lint_version.stdout) and (ansible_architecture == "x86_64")
+  file: dest=/tmp/golangci-lint-2.1.1-linux-amd64/golangci-lint mode=a+x group={{user}} owner={{user}}
+  when: ("2.1.1" not in golangci_lint_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Install golangci-lint to user {{user}} ~/.local/bin
-  command: mv -f /tmp/golangci-lint-1.41.1-linux-amd64/golangci-lint /home/{{user}}/.local/bin/golangci-lint
-  when: ("1.41.1" not in golangci_lint_version.stdout) and (ansible_architecture == "x86_64")
+  command: mv -f /tmp/golangci-lint-2.1.1-linux-amd64/golangci-lint /home/{{user}}/.local/bin/golangci-lint
+  when: ("2.1.1" not in golangci_lint_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Install dev tooling
   apt:
@@ -272,7 +270,6 @@
     - x11-xserver-utils
     - gettext
     - unzip
-    - python-pygments
     - graphviz
     - pandoc
     - xclip
@@ -280,6 +277,15 @@
     - jq
     - grc
     - bashtop
+
+- name: Install non Ubuntu 24 dev tooling
+  apt:
+    name: "{{ items }}"
+    state: present
+  vars:
+    items:
+    - python-pygments
+  when: (ansible_architecture == "x86_64") and  (ansible_distribution != "Ubuntu") and (ansible_distribution_major_version != "24")
 
 - name: Install x86 specific dev tooling
   apt:
@@ -326,18 +332,17 @@
     state: directory
     suffix: _jenkinsx_installer
   register: jenkinsx_temp
-  when: ("2.1.138" not in jx_version.stdout) and (ansible_architecture == "x86_64")
+  when: ("3.11.77" not in jx_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Install Jenkins X CLI
   shell:
-    cmd: curl -L "https://github.com/jenkins-x/jx/releases/download/$(curl --silent https://github.com/jenkins-x/jx/releases/latest | sed 's#.*tag/\(.*\)\".*#\1#')/jx-linux-amd64.tar.gz" | tar xzv "jx"
+    cmd: curl -L "https://github.com/jenkins-x/jx/releases/download/v3.11.77/jx-linux-amd64.tar.gz" | tar xzv "jx"
     chdir: "{{ jenkinsx_temp.path }}"
-    warn: false
-  when: ("2.1.138" not in jx_version.stdout) and (ansible_architecture == "x86_64")
+  when: ("3.11.77" not in jx_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Move extracted JenkinsX executable to /home/{{user}}/.local/bin
   command: mv {{ jenkinsx_temp.path }}/jx /home/{{user}}/.local/bin/jx
-  when: ("2.1.138" not in jx_version.stdout) and (ansible_architecture == "x86_64")
+  when: ("3.11.77" not in jx_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Remove the temporary jenkinsx directory
   file:
@@ -378,9 +383,18 @@
     - libtool
     - make
     - pkg-config
-    - zlibc
     - zlib1g
     - zlib1g-dev
+
+- name: Install thrift non Ubuntu 24 development tools for C++
+  apt:
+    name: "{{ items }}"
+    update_cache: yes
+    state: present
+  vars:
+    items:
+    - zlibc
+  when: (ansible_distribution != "Ubuntu") and (ansible_distribution_major_version != "14")
 
 - name: Install Ruby development tools
   apt: 

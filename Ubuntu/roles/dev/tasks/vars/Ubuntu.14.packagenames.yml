@@ -1,1 +1,1 @@
-package_names: clang-format-3.6,libreadline6,libreadline6-dev,libboost1.55-all-dev
+package_names: clang-format-3.6,libreadline6,libreadline6-dev,libboost1.55-all-dev,python-pygments
