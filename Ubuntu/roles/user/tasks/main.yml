@@ -1,3 +1,14 @@
+# An rc of 0 means the text was found
+- name: Test OS for OrbStack
+  shell: grep -qE "(orbstack)" /proc/version
+  register: OrbStack
+  ignore_errors: True
+  no_log: True
+
+- name: Summary step for OrbStack
+  set_fact:
+    orbstack: "{{ true if (not OrbStack.failed and OrbStack.rc == 0) }}"
+
 - name: Upgrade tmux
   apt: name=tmux state=present
 
@@ -13,28 +24,39 @@
 - name: Add local developer group
   group: name={{user}} state=present
 
-- name: Add local developer user account
-  user: name={{user}} group={{user}} groups=sudo,adm,docker append=yes shell=/bin/zsh state=present
+- name: Add local developer user account (Generic)
+  user: name={{user}} group={{user}} groups=sudo,adm,docker,kvm append=yes shell=/bin/zsh state=present
+  when: not orbstack
+
+- name: Add local developer user account (OSX OrbStack)
+  user: name={{user}} group={{user}} groups=sudo,adm,kvm append=yes shell=/bin/zsh state=present
+  when: orbstack
 
 - name: Add local developer ssh keys
   user: name={{user}} ssh_key_file=.ssh/id_ed25519 ssh_key_type=ed25519 generate_ssh_key=yes
+  when: not orbstack
 
 - name: Add developer SSH key
   authorized_key: user={{user}} key="{{ lookup('file', '~/.ssh/id_ed25519.pub') }}"
+  when: not orbstack
 
 - name: Change sudo group to not need passwords
+  become: true
   lineinfile: dest=/etc/sudoers state=present line='{{user}} ALL=(ALL) NOPASSWD:ALL' validate='visudo -cf %s'
 
 - name: Read SSH public key to authorize
-  shell: cat /home/{{user}}/.ssh/id_ed25519.pub
+  ansible.builtin.command: cat ~/.ssh/id_ed25519.pub
   register: ssh_pub_key
+  become: true
+  become_user: "{{ user }}"
 
-- name: Authorize key with GitHub for {{ ansible_hostname }} {{ user }}
+- name: Authorize key with GitHub for host "{{ ansible_hostname }}" user "{{ user }}"
   local_action:
     module: github_key
-    name: Access Key for {{ ansible_hostname }} {{ ansible_default_ipv4.address }} {{ ansible_default_ipv4.macaddress }}
+    name: Access Key for "{{ ansible_hostname }}" "{{ ansible_default_ipv4.address }}" "{{ ansible_default_ipv4.macaddress }}"
     token: "{{ lookup('env', 'GITHUB_TOKEN') }}"
     pubkey: "{{ ssh_pub_key.stdout }}"
+  become: false
   when: lookup('env', 'GITHUB_TOKEN') != ""
 
 - name: Notify Github SSH key injection status

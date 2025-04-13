@@ -2,6 +2,16 @@ For installation instructions related to ansible please use the information
 found at https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#installing-ansible-on-ubuntu.
 The main prerequisite for ansible is that python be installed on the Linux systems.
 
+```sh
+ansible-galaxy collection install community.general
+```
+
+You may also need to configure SSHD for your machine.
+
+```sh
+sudo apt-get install openssh-server
+```
+
 When using the tasks present within this repository a user account will be created
 using the user ID of the account you start the ansible playbook from automatically.
 This means you should use the account that the cloud provider offers by default 

@@ -1,4 +1,4 @@
-package_names: libhttp-parser2.1,sublime-text-installer
+package_names: libhttp-parser2.1,sublime-text-installer,gvfs-bin
 package_repos:
   - ppa:gnome-terminator
   - ppa:webupd8team/sublime-text-2

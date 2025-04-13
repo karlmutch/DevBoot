@@ -4,9 +4,23 @@
   register: WSL
   ignore_errors: True
   no_log: True
-  args:
-      warn: False
 
+# An rc of 0 means the text was found
+- name: Test OS for OrbStack
+  shell: grep -qE "(orbstack)" /proc/version
+  register: OrbStack
+  ignore_errors: True
+  no_log: True
+
+- name: Evaluate of this is likely to be a pure Linux system that will use its own docker
+  set_fact:
+    bare_metal_linux: "{{ true if ( WSL.failed or WSL.rc == 1 ) and (OrbStack.failed or OrbStack.rc == 1) }}"
+
+- name: Print Bare metal
+  ansible.builtin.debug:
+    msg: "Bare metal {{bare_metal_linux}} {{ ansible_architecture }} {{ ansible_distribution }}"
+
+# An rc of 0 means the text was found
 - name: Install general certs
   apt: 
     name: "{{ items }}" 
@@ -33,24 +47,41 @@
   become: true
   shell: /usr/sbin/update-ca-certificates -f
 
+- name: Get users homedir
+  local_action: command echo ~{{ user }}
+  register: home_output
+  become: false
+
+- set_fact:
+    homedir: "{{ home_output.stdout }}"
+
+- name: Creates users .local/bin directory
+  file:
+    dest: "{{homedir}}/.local/bin"
+    state: directory
+    recurse: yes
+
 - name: Load available groups
   shell: /usr/bin/getent group | awk -F":" '{print $1}'
   register: etc_groups
-  when: WSL.failed or (WSL.rc == 1) 
 
 - name: Add the docker group
   group: name=docker gid=998 state=present
-  when: '(WSL.failed or WSL.rc == 1) and "docker" not in etc_groups.stdout_lines'
+  when: bare_metal_linux and ansible_architecture == "x86_64" and (ansible_distribution == "Ubuntu") and ( ansible_distribution_major_version | int < 24)
+
+- name: Add the docker group
+  group: name=docker gid=890 state=present
+  when: bare_metal_linux and ansible_architecture == "x86_64" and (ansible_distribution == "Ubuntu") and ( ansible_distribution_major_version | int >= 24)
 
 # Using apt-key within the ansible python code breaks on Ubuntu 14.04 due to openssl package dependencies breaking
 - name: Add Docker GPG key
   command: bash -lc "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -"
-  when: ansible_architecture == "x86_64" and ansible_distribution != "Ubuntu" and (WSL.failed or WSL.rc == 1)
+  when: ansible_architecture == "x86_64" and ansible_distribution != "Ubuntu" and bare_metal_linux
 
 - name: Add Docker APT repository
   apt_repository:
     repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ansible_distribution_release}} stable
-  when: ansible_architecture == "x86_64" and ansible_distribution != "Ubuntu" and (WSL.failed or WSL.rc == 1)
+  when: ansible_architecture == "x86_64" and ansible_distribution != "Ubuntu" and bare_metal_linux
 
 - name: Install Docker CE and it dependencies
   apt:
@@ -63,109 +94,103 @@
     - docker-ce
     - docker-ce-cli 
     - containerd.io
-  when: ansible_architecture == "x86_64" and ansible_distribution != "Ubuntu" and (WSL.failed or WSL.rc == 1)
-
+  when: ansible_architecture == "x86_64" and ansible_distribution != "Ubuntu" and bare_metal_linux
 
 - name: Install Ubuntu docker distribution
   snap:
     name: docker
     classic: yes
-  when: ansible_architecture == "x86_64" and ansible_distribution == "Ubuntu" and (WSL.failed or WSL.rc == 1)
 
 - name: Install the microk8s Kubernetes distribution
   snap:
     name: microk8s
     classic: yes
-  when: ansible_architecture == "x86_64" and ansible_distribution == "Ubuntu" and (WSL.failed or WSL.rc == 1)
+  when: ansible_architecture == "x86_64" and ansible_distribution == "Ubuntu" and bare_metal_linux
 
 - name: Start Docker
   service: name=docker state=restarted
-  when: ansible_architecture == "x86_64" and ansible_distribution != "Ubuntu" and (WSL.failed or WSL.rc == 1)
+  when: ansible_architecture == "x86_64" and ansible_distribution == "Ubuntu" and bare_metal_linux
 
+- name: Start Docker
+  service: name=docker state=restarted
+  when: ansible_architecture == "x86_64" and ansible_distribution != "Ubuntu" and bare_metal_linux
 
-- name: Download trivy 0.16.0
+- name: Add Rancher GPG key
+  command: bash -lc "curl -fsSL https://download.opensuse.org/repositories/isv:/Rancher:/stable/deb/Release.key | sudo apt-key add -"
+  when: ansible_architecture == "x86_64" and ansible_distribution != "Ubuntu" and bare_metal_linux
+
+- name: Add Rancher APT repository
+  apt_repository:
+    repo: deb https://download.opensuse.org/repositories/isv:/Rancher:/stable/deb/ ./
+  when: ansible_architecture == "x86_64" and ansible_distribution != "Ubuntu" and bare_metal_linux
+
+- name: Install Rancher Desktop
+  apt:
+    name: "{{ items }}"
+    state: present
+    update_cache: yes
+  vars:
+    items:
+    -  rancher-desktop
+  when: ansible_architecture == "x86_64" and ansible_distribution != "Ubuntu" and bare_metal_linux
+
+- name: Download trivy 0.47.0
   get_url: 
-    url: https://github.com/aquasecurity/trivy/releases/download/v0.19.2/trivy_0.19.2_Linux-64bit.deb
+    url: https://github.com/aquasecurity/trivy/releases/download/v0.47.0/trivy_0.47.0_Linux-64bit.deb
     dest: /tmp/trivy.deb
     force: true
+  when: ansible_architecture == "x86_64" and ansible_distribution != "Ubuntu" and bare_metal_linux
 
 - name: Install trivy
   apt: deb=/tmp/trivy.deb
   become: true
+  when: ansible_architecture == "x86_64" and ansible_distribution != "Ubuntu" and bare_metal_linux
 
-- name: Check for a version of docui
-  stat: 
-      path: "/home/{{user}}/.local/bin/docui"
-  register: docuiPath
-
-- name: Download docui
-  get_url: 
-    url: https://github.com/skanehira/docui/releases/download/2.0.4/docui_2.0.4_Linux_x86_64.tar.gz
-    dest: /tmp/docui.tar.gz
-    force: true
-  when: not docuiPath.stat.exists
-
-- name: Unpack docui
-  unarchive:
-    src: /tmp/docui.tar.gz
-    dest: /tmp
-    copy: no
-    creates: "/tmp/docui"
-  when: not docuiPath.stat.exists
-
-- name: Set docui ownership
-  file: dest=/tmp/docui mode=a+x group={{user}} owner={{user}}
-  when: not docuiPath.stat.exists
-
-- name: Install docui to user {{user}} ~/.local/bin
-  command: mv -f /tmp/docui /home/{{user}}/.local/bin/docui
-  when: not docuiPath.stat.exists
-
-- name: Check if kubespy v0.6.0 is installed
-  shell: /home/{{user}}/.local/bin/kubespy version
+- name: Check if kubespy v0.6.2 is installed
+  shell: "{{homedir}}/.local/bin/kubespy version"
   register: kubespy_version
   failed_when: false
   changed_when: false
 
-- name: Download kubespy 0.6.0
+- name: Download kubespy 0.6.2
   get_url:
-      url: https://github.com/pulumi/kubespy/releases/download/v0.6.0/kubespy-v0.6.0-linux-amd64.tar.gz
+      url: https://github.com/pulumi/kubespy/releases/download/v0.6.2/kubespy-v0.6.2-linux-amd64.tar.gz
       dest: /tmp/kubespy.tar.gz
       force: true
-  when: ("v0.6.0" not in kubespy_version.stdout) and (ansible_architecture == "x86_64")
+  when: ("v0.6.2" not in kubespy_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Clean kubespy artifact path
   file:
     state: absent
     path: "/tmp/kubespy"
-  when: ("v0.6.0" not in kubespy_version.stdout) and (ansible_architecture == "x86_64")
+  when: ("v0.6.2" not in kubespy_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Create a kubespy unpack directory
   file:
       path: /tmp/kubespy
       state: directory
       mode: "u=rw,g=wx,o=rwx"
-  when: ("v0.6.0" not in kubespy_version.stdout) and (ansible_architecture == "x86_64")
+  when: ("v0.6.2" not in kubespy_version.stdout) and (ansible_architecture == "x86_64")
 
-- name: Extract kubespy v0.6.0
+- name: Extract kubespy v0.6.2
   unarchive:
     src: /tmp/kubespy.tar.gz
     dest: /tmp/kubespy
     group: "{{user}}"
     owner: "{{user}}"
     copy: no
-  when: ("v0.6.0" not in kubespy_version.stdout) and (ansible_architecture == "x86_64")
+  when: ("v0.6.2" not in kubespy_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Set kubespy ownership
   file: dest=/tmp/kubespy/kubespy mode=a+x group={{user}} owner={{user}}
-  when: ("v0.6.0" not in kubespy_version.stdout) and (ansible_architecture == "x86_64")
+  when: ("v0.6.2" not in kubespy_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Install kubespy to user {{user}} ~/.local/bin
-  command: mv -f /tmp/kubespy/kubespy /home/{{user}}/.local/bin/kubespy
-  when: ("v0.6.0" not in kubespy_version.stdout) and (ansible_architecture == "x86_64")
+  command: mv -f /tmp/kubespy/kubespy "{{homedir}}/.local/bin/kubespy"
+  when: ("v0.6.2" not in kubespy_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Clean kubespy artifact path
   file:
     state: absent
     path: "/tmp/kubespy"
-  when: ("v0.6.0" not in kubespy_version.stdout) and (ansible_architecture == "x86_64")
+  when: ("v0.6.2" not in kubespy_version.stdout) and (ansible_architecture == "x86_64")

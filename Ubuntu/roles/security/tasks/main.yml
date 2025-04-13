@@ -4,20 +4,37 @@
   register: WSL
   ignore_errors: True
   no_log: True
-  args:
-      warn: False
+
+# An rc of 0 means the text was found
+- name: Test OS for OrbStack
+  shell: grep -qE "(orbstack)" /proc/version
+  register: OrbStack
+  ignore_errors: True
+  no_log: True
+
+- name: Evaluate of this is likely to be a pure Linux system that will use its own docker
+  set_fact:
+    bare_metal_linux: "{{ true if ( WSL.failed or WSL.rc == 1 ) and (OrbStack.failed or OrbStack.rc == 1) }}"
 
 - name: Change sudo group to not need passwords
-  lineinfile: dest=/etc/sudoers state=present line="Defaults\texempt_group=sudo"
+  lineinfile: 
+    path: /etc/sudoers
+    state: present
+    line: '%your_group_name ALL=(ALL) NOPASSWD: ALL'
+    insertbefore: '^#includedir /etc/sudoers.d'
+    validate: 'visudo -cf %s'
 
 - name: Set DNS checking to off
   lineinfile: line="UseDNS no" dest=/etc/ssh/sshd_config state=present
+  when: bare_metal_linux
 
 - name: Set password access to false
   lineinfile: line="GSSAPIAuthentication no" dest=/etc/ssh/sshd_config state=present
+  when: bare_metal_linux
 
 - name: Set password access to false
   lineinfile: regexp="^PasswordAuthentication " line="PasswordAuthentication no" dest=/etc/ssh/sshd_config state=present
+  when: bare_metal_linux
 
 - name: Install packages that assist with security
   apt: 
@@ -29,6 +46,7 @@
     - fail2ban
     - unattended-upgrades
     - logwatch
+  when: bare_metal_linux
 
 - name: Install packages needed to relay email reports
   apt: 
@@ -41,15 +59,19 @@
     - libsasl2-2
     - ca-certificates
     - libsasl2-modules
+  when: bare_metal_linux
 
 - name: Setup automatic periodic apt updates
   lineinfile: dest=/etc/apt/apt.conf.d/10periodic line="APT::Periodic::Update-Package-Lists \"1\";" state=present
+  when: ansible_architecture == "x86_64" and (ansible_distribution == "Ubuntu") and ( ansible_distribution_major_version | int < 23)
 
 - name: Setup automatic periodic apt package downloads
   lineinfile: dest=/etc/apt/apt.conf.d/10periodic state=present line="APT::Periodic::Download-Upgradeable-Packages \"1\";"
+  when: ansible_architecture == "x86_64" and (ansible_distribution == "Ubuntu") and ( ansible_distribution_major_version | int < 23)
 
 - name: Setup automatic periodic apt package auto clean
   lineinfile: dest=/etc/apt/apt.conf.d/10periodic state=present line="APT::Periodic::AutocleanInterval \"7\";"
+  when: ansible_architecture == "x86_64" and (ansible_distribution == "Ubuntu") and ( ansible_distribution_major_version | int < 23)
 
 # ufw supports connection rate limiting, which is useful for protecting
 # against brute-force login attacks. ufw will deny connections if an IP
@@ -60,6 +82,7 @@
   ufw: rule=limit port={{ ssh_port | default("22") }} proto=tcp
   notify:
     - Restart ufw
+  when: bare_metal_linux
 
 # Allow OpenSSH. (Note that as ufw manages its own state, simply removing
 # a rule=allow task can leave those ports exposed. Either use delete=yes
@@ -68,21 +91,25 @@
   ufw: rule=allow name=OpenSSH
   notify:
     - Restart ufw
+  when: bare_metal_linux
 
 - name: Allow mosh traffic
   ufw: rule=allow proto=udp port=60000:60010
   notify:
     - Restart ufw
+  when: bare_metal_linux
 
 # Set logging
 - name: Enabled UFW logging
   ufw: logging=on
+  when: bare_metal_linux
 
 # Sometimes it is desirable to let the sender know when traffic is
 # being denied, rather than simply ignoring it. In these cases, use
 # reject instead of deny. In addition, log rejected connections:
 - name: Enabled UFW reject logging
   ufw: rule=reject port=auth log=yes
+  when: bare_metal_linux
 
 - name: Configure ufw default policies
   ufw: direction={{ item.direction }} policy={{ item.policy }}
@@ -91,6 +118,7 @@
     - { direction: 'outgoing', policy: 'allow' }
   notify:
     - Restart ufw
+  when: bare_metal_linux
 
 - name: Disallow root SSH access
   lineinfile: dest=/etc/ssh/sshd_config
@@ -98,6 +126,7 @@
               line="PermitRootLogin no"
               state=present
   notify: Restart ssh
+  when: bare_metal_linux
 
 # Starting with 3 new connections pending authentication the server will 
 # start to drop 50% of the new connections. The probability of random 
@@ -111,6 +140,7 @@
               line="MaxStartups 3:50:10"
               state=present
   notify: Restart ssh
+  when: bare_metal_linux
 
 # Allow connects with failed authentication attempts to only 30 seconds from the
 # default of 2 minutes
@@ -121,6 +151,7 @@
               line="LoginGraceTime 30"
               state=present
   notify: Restart ssh
+  when: bare_metal_linux
 
 - name: Set up Postfix to relay mail to enabled logging security reports
   debconf: name=postfix
@@ -130,7 +161,7 @@
   with_items:
       - { question: 'postfix/mailname', value: '{{ ansible_fqdn }}', vtype: 'string' }
       - { question: 'postfix/main_mailer_type', value: 'Internet Site', vtype: 'string' }
-  when: WSL.rc == 1
+  when: bare_metal_linux
 
 # Modify the empty relay host lines that is given as a default
 #
@@ -140,7 +171,7 @@
               line="relayhost = [smtp.gmail.com]:587"
               state=present
   notify: Restart postfix
-  when: gmail_user is defined and gmail_app_password is defined and WSL.rc == 1
+  when: gmail_user is defined and gmail_app_password is defined and bare_metal_linux
 
 - name: Modify postfix smtp SASL based auth enabled
   lineinfile: dest=/etc/postfix/main.cf
@@ -148,7 +179,7 @@
               line="smtp_sasl_auth_enable = yes"
               state=present
   notify: Restart postfix
-  when: WSL.rc == 1
+  when: bare_metal_linux
 
 - name: Modify postfix smtp password map for Google application passwords
   lineinfile: dest=/etc/postfix/main.cf
@@ -156,7 +187,7 @@
               line="smtp_sasl_password_maps = hash:/etc/postfix/sasl/sasl_passwd"
               state=present
   notify: Restart postfix
-  when: WSL.rc == 1
+  when: bare_metal_linux
 
 - name: Modify postfix smtp for non anonymous access
   lineinfile: dest=/etc/postfix/main.cf
@@ -164,7 +195,7 @@
               line="smtp_sasl_security_options = noanonymous"
               state=present
   notify: Restart postfix
-  when: WSL.rc == 1
+  when: bare_metal_linux
 
 - name: Modify postfix smtp certificate file
   lineinfile: dest=/etc/postfix/main.cf
@@ -172,7 +203,7 @@
               line="smtp_tls_CAfile = /etc/postfix/cacert.pem"
               state=present
   notify: Restart postfix
-  when: WSL.rc == 1
+  when: bare_metal_linux
 
 - name: Modify postfix smtp TLS enabled
   lineinfile: dest=/etc/postfix/main.cf
@@ -180,15 +211,15 @@
               line="smtp_use_tls = yes"
               state=present
   notify: Restart postfix
-  when: WSL.rc == 1
+  when: bare_metal_linux
 
 - name: Copy thwate root CA file
   command: cp /etc/ssl/certs/thawte_Primary_Root_CA.pem /etc/postfix/cacert.pem
-  when: WSL.rc == 1 and (ansible_distribution != "Ubuntu") and (ansible_distribution_major_version != "20")
+  when: bare_metal_linux and (ansible_distribution != "Ubuntu") and (ansible_distribution_major_version != "20")
 
 - name: Create the postfix relay password file 
   file: path=/etc/postfix/sasl/sasl_password state=touch
-  when: gmail_user is defined and gmail_app_password is defined and WSL.rc == 1
+  when: gmail_user is defined and gmail_app_password is defined and bare_metal_linux
 
 - name: Add google mail relay user and password settings
   lineinfile: dest=/etc/postfix/sasl/sasl_password
@@ -196,20 +227,20 @@
               line="[smtp.gmail.com]:587 {{ gmail_user }}@gmail.com:{{ gmail_app_password }}"
               state=present
   notify: Restart postfix
-  when: gmail_user is defined and gmail_app_password is defined and WSL.rc == 1
+  when: gmail_user is defined and gmail_app_password is defined and bare_metal_linux
 
 - name: Set the postfix relay password file permissions
   file: path=/etc/postfix/sasl/sasl_password mode=400
-  when: gmail_user is defined and gmail_app_password is defined and WSL.rc == 1
+  when: gmail_user is defined and gmail_app_password is defined and bare_metal_linux
 
 - name: Add the security mapping to postfix
   command: postmap /etc/postfix/sasl/sasl_password
   notify: Restart postfix
-  when: gmail_user is defined and gmail_app_password is defined and WSL.rc == 1
+  when: gmail_user is defined and gmail_app_password is defined and bare_metal_linux
 
 - name: Email log summary daily
   lineinfile: dest=/etc/cron.daily/00logwatch
               regexp="^/usr/sbin/logwatch"
               line="/usr/sbin/logwatch --output mail --mailto karlmutch@gmail.com --detail high"
               state=present create=yes
-  when: gmail_user is defined and gmail_app_password is defined and WSL.rc == 1
+  when: gmail_user is defined and gmail_app_password is defined and bare_metal_linux

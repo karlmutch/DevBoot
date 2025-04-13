@@ -1,0 +1,5 @@
+package_names: 
+    - clang-format-18
+    - libreadline-dev
+    - libboost1.83-all-dev
+    - python3-pygments

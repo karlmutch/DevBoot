@@ -1,4 +1,12 @@
 ---
+- name: Create /usr/local/bin if it does not exist
+  ansible.builtin.file:
+    path: /usr/local/bin
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+
 - name: Remove Use DNS
   lineinfile:
     state=absent
@@ -19,12 +27,15 @@
   tags: install
   when: cloud.stat.exists
 
-- name: set Ubuntu keyserver
-  apt_key: keyserver=keyserver.ubuntu.com id=36A1D7869245C8950F966E92D8576A8BA88D21E9
-
 - name: Install sudo (Debian only)
   apt: pkg=sudo state=present
   when: ansible_distribution == 'Debian'
+
+- name: Install gnupg
+  apt: pkg=gnupg state=present
+
+- name: set Ubuntu keyserver
+  apt_key: keyserver=keyserver.ubuntu.com id=36A1D7869245C8950F966E92D8576A8BA88D21E9
 
 #- name: Add the Ubuntu security repo
   #apt_repository:
@@ -38,13 +49,27 @@
   become_user: root
   register: package_debug
 
+- name: Install LSB tools
+  apt: name="{{ items }}" state=present
+  vars:
+    items:
+    - lsb-core
+  when: ansible_architecture == "x86_64" and (ansible_distribution == "Ubuntu") and ( ansible_distribution_major_version | int < 23)
+
+- name: Install LSB tools
+  apt: name="{{ items }}" state=present
+  vars:
+    items:
+    - lsb-base
+    - lsb-release
+  when: ansible_architecture == "x86_64" and (ansible_distribution == "Ubuntu") and ( ansible_distribution_major_version | int >= 23)
+
 - name: Install NTP server
   apt: name="{{ items }}" state=present
   vars:
     items:
     - ntp
     - aptitude
-    - lsb-core
 
 - name: Upgrade apt
   apt: upgrade=full
