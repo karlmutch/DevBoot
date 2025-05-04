@@ -40,7 +40,6 @@
   apt_repository: repo='{{ item }}' update_cache=yes
   with_items:
     - ppa:git-core/ppa
-    - deb https://cli.github.com/packages stable main
 
 - name: Install github CLI
   apt: 
@@ -93,7 +92,7 @@
   ansible.builtin.file:
     path: "{{homedir}}/.zprofile"
     owner: "{{user}}"
-    group: "{{user}}"
+    group: "{{group}}"
     mode: '0700'
     state: touch
 
@@ -121,10 +120,10 @@
   when: (ansible_distribution != "Ubuntu") and (ansible_distribution_major_version != "14")
 
 - name: Create user ~/.local/bin directory
-  file: path=/home/{{user}}/.local/bin state=directory group={{user}} owner={{user}}
+  file: path={{homedir}}/.local/bin state=directory group={{group}} owner={{user}}
 
 - name: Check if Go 1.24.2 is installed
-  shell: /home/{{user}}/go/bin/go version
+  shell: "{{homedir}}/go/bin/go version"
   register: go_version
   failed_when: false
   changed_when: false
@@ -139,7 +138,7 @@
 - name: Clean artifact path
   file:
     state: absent
-    path: "/home/{{user}}/go"
+    path: "{{homedir}}/go"
   when: ("go1.24.2" not in go_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Check for clean go directory
@@ -150,8 +149,8 @@
 - name: Install Go 1.24.2 locally for user {{user}}
   unarchive:
     src: /tmp/go1.24.2.linux-amd64.tar.gz
-    dest: "/home/{{user}}"
-    group: "{{user}}"
+    dest: "{{homedir}}"
+    group: "{{group}}"
     owner: "{{user}}"
     copy: no
   when: not goPath.stat.exists and ("go1.24.2" not in go_version.stdout) and (ansible_architecture == "x86_64")
@@ -173,7 +172,7 @@
     #mode: 0200
 
 - name: Check if RipGrep 14.1.1 is installed
-  shell: /home/{{user}}/.local/bin/rg -V
+  shell: "{{homedir}}/.local/bin/rg -V"
   register: rg_version
   failed_when: false
   changed_when: false
@@ -194,11 +193,11 @@
   when: ("ripgrep 14.1.1" not in rg_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Set Ripgrep ownership
-  file: dest=/tmp/ripgrep-14.1.1-x86_64-unknown-linux-musl/rg mode=a+x group={{user}} owner={{user}}
+  file: dest=/tmp/ripgrep-14.1.1-x86_64-unknown-linux-musl/rg mode=a+x group={{group}} owner={{user}}
   when: ("ripgrep 14.1.1" not in rg_version.stdout)
 
 - name: Install RipGrep to user {{user}} ~/.local/bin
-  command: mv -f /tmp/ripgrep-14.1.1-x86_64-unknown-linux-musl/rg /home/{{user}}/.local/bin/rg
+  command: "mv -f /tmp/ripgrep-14.1.1-x86_64-unknown-linux-musl/rg {{homedir}}/.local/bin/rg"
   when: ("ripgrep 14.1.1" not in rg_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Check if buf build 1.28.1 is installed
@@ -237,7 +236,7 @@
   when: ("delta 0.16.5" not in delta_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Set git-delta ownership
-  file: dest=/tmp/delta-0.16.5-{{ansible_architecture}}-unknown-linux-musl/delta mode=a+x group={{user}} owner={{user}}
+  file: dest=/tmp/delta-0.16.5-{{ansible_architecture}}-unknown-linux-musl/delta mode=a+x group={{group}} owner={{user}}
   when: ("delta 0.16.5" not in delta_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Install git-delta to user {{user}} ~/.local/bin
@@ -245,7 +244,7 @@
   when: ("delta 0.16.5" not in delta_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Check if direnv 2.36.0 is installed
-  shell: /home/{{user}}/.local/bin/direnv version
+  shell: "{{homedir}}/.local/bin/direnv version"
   register: direnv_version
   failed_when: false
   changed_when: false
@@ -253,12 +252,12 @@
 - name: Download direnv 2.36.0
   get_url:
     url: https://github.com/direnv/direnv/releases/download/v2.36.0/direnv.linux-amd64
-    dest: /home/{{user}}/.local/bin/direnv
+    dest: "{{homedir}}/.local/bin/direnv"
     force: true
   when: ("2.36.0" not in direnv_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Enable direnv
-  file: dest=/home/{{user}}/.local/bin/direnv mode=a+x group={{user}} owner={{user}}
+  file: dest={{homedir}}/.local/bin/direnv mode=a+x group={{group}} owner={{user}}
   when: ("2.36.0" not in direnv_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Check if grv 0.3.2 is installed
@@ -275,7 +274,7 @@
   when: ("0.3.2" not in grv_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Enable grv
-  file: dest="{{homedir}}/.local/bin/grv" mode=a+x group={{user}} owner={{user}}
+  file: dest="{{homedir}}/.local/bin/grv" mode=a+x group={{group}} owner={{user}}
   when: ("0.3.2" not in grv_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Check if grpcurl 1.8.9 is installed
@@ -300,7 +299,7 @@
   when: ("1.8.9" not in grpc_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Set grpcurl ownership
-  file: dest=/tmp/grpcurl mode=a+x group={{user}} owner={{user}}
+  file: dest=/tmp/grpcurl mode=a+x group={{group}} owner={{user}}
   when: ("1.8.9" not in grpc_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Install grpcurl to user {{user}} ~/.local/bin
@@ -308,7 +307,7 @@
   when: ("1.8.9" not in grpc_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Check if golangci-lint 2.1.1 is installed
-  shell: /home/{{user}}/.local/bin/golangci-lint --version
+  shell: "{{homedir}}/.local/bin/golangci-lint --version"
   register: golangci_lint_version
   failed_when: false
   changed_when: false
@@ -329,11 +328,11 @@
   when: ("2.1.1" not in golangci_lint_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Set golangci-lint ownership
-  file: dest=/tmp/golangci-lint-2.1.1-linux-amd64/golangci-lint mode=a+x group={{user}} owner={{user}}
+  file: dest=/tmp/golangci-lint-2.1.1-linux-amd64/golangci-lint mode=a+x group={{group}} owner={{user}}
   when: ("2.1.1" not in golangci_lint_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Install golangci-lint to user {{user}} ~/.local/bin
-  command: mv -f /tmp/golangci-lint-2.1.1-linux-amd64/golangci-lint /home/{{user}}/.local/bin/golangci-lint
+  command: "mv -f /tmp/golangci-lint-2.1.1-linux-amd64/golangci-lint {{homedir}}/.local/bin/golangci-lint"
   when: ("2.1.1" not in golangci_lint_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Install dev tooling
@@ -374,6 +373,10 @@
     - jq
     - grc
     - bashtop
+    - lolcat
+    - fzf
+    - bat
+    - fd-find
 
 - name: Install non Ubuntu 24 dev tooling
   apt:
@@ -418,8 +421,17 @@
     group: root
     state: link
 
+- name: ZOxide Installer
+  shell: curl -sSfL https://raw.githubusercontent.com/ajeetdsouza/zoxide/main/install.sh | sh
+
+- name: Rust Compiler
+  shell: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+
+- name: Starship Rust Prompt
+  shell: ".cargo/bin/cargo install starship --locked"
+
 - name: Check if Jenkins X is installed
-  shell: /home/{{user}}/.local/bin/jx version | grep Version |  tr -s ' ' | cut -f2 -d' '
+  shell: "{{homedir}}/.local/bin/jx version | grep Version |  tr -s ' ' | cut -f2 -d' '"
   register: jx_version
   failed_when: false
   changed_when: false
@@ -437,8 +449,8 @@
     chdir: "{{ jenkinsx_temp.path }}"
   when: ("3.11.77" not in jx_version.stdout) and (ansible_architecture == "x86_64")
 
-- name: Move extracted JenkinsX executable to /home/{{user}}/.local/bin
-  command: mv {{ jenkinsx_temp.path }}/jx /home/{{user}}/.local/bin/jx
+- name: Move extracted JenkinsX executable to {{homedir}}/.local/bin
+  command: "mv {{ jenkinsx_temp.path }}/jx {{homedir}}/.local/bin/jx"
   when: ("3.11.77" not in jx_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Remove the temporary jenkinsx directory
