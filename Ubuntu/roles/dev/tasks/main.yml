@@ -377,6 +377,10 @@
     - fzf
     - bat
     - fd-find
+    - ffmpeg
+    - 7zip
+    - poppler-utils
+    - imagemagick
 
 - name: Install non Ubuntu 24 dev tooling
   apt:
@@ -429,6 +433,9 @@
 
 - name: Starship Rust Prompt
   shell: ".cargo/bin/cargo install starship --locked"
+
+- name: yazi filesystem browser
+  shell: ".cargo/bin/cargo install --locked yazi-fm yazi-cli"
 
 - name: Check if Jenkins X is installed
   shell: "{{homedir}}/.local/bin/jx version | grep Version |  tr -s ' ' | cut -f2 -d' '"
