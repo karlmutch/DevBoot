@@ -176,13 +176,13 @@
   unarchive:
     src: /tmp/kubespy.tar.gz
     dest: /tmp/kubespy
-    group: "{{user}}"
+    group: "{{group}}"
     owner: "{{user}}"
     copy: no
   when: ("v0.6.2" not in kubespy_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Set kubespy ownership
-  file: dest=/tmp/kubespy/kubespy mode=a+x group={{user}} owner={{user}}
+  file: dest=/tmp/kubespy/kubespy mode=a+x group={{group}} owner={{user}}
   when: ("v0.6.2" not in kubespy_version.stdout) and (ansible_architecture == "x86_64")
 
 - name: Install kubespy to user {{user}} ~/.local/bin
